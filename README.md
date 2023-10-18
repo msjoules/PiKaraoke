@@ -7,6 +7,8 @@ You can buy him a coffee here:
 
 My modifications focus only on the Raspberry Pi 3b/b+ so some things may not work completely in other OSs.
 
+The default admin password is:  mypi
+
 <br>
 
 ## README courtesy of Vicwomg:
@@ -91,6 +93,13 @@ Install git, if you haven't already. (on raspberry pi: `sudo apt-get update; sud
 Install python3/pip3 (usually raspberry pis already have it, run `python3 --version` to check): https://www.python.org/downloads/ (python 2.7 may work, but is not officially supported)
 
 Clone this repo:
+
+```
+git clone https://github.com/msjoules/PiKaraoke.git
+cd pikaraoke
+```
+
+Clone original repo:
 
 ```
 git clone https://github.com/vicwomg/pikaraoke.git
