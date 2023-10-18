@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+
+{% block scripts %}
+<script>
+  $(function () {
+    $("#change_dir-form").submit(function (e) {
+      if (!window.confirm("Are you sure you want to change the song directory?")) {
+        e.preventDefault();
+      }
+    });
+
+    $("#refresh-button").click(function (e) {
+    if (window.confirm(`Are you sure you want to refresh your song directory?
+    Rescanning may take a few minutes.`)) {
+      window.location.href='/refresh';
+    }
+    });
+  });
+</script>
+
+{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='custom.css') }}">
+{% endblock %}
+
+{% block header %}
+<h1>{% block title %}
+    {# MSG: Title for the storage information page. #}
+    {% trans %}Storage{% endtrans %}
+  {% endblock %}
+</h1>
+{% endblock %}
+
+{% block content %}
+<hr />
+
+<h2>
+  {% trans %}
+  Current Path to Song Directory:&ensp;
+  <span style="color:rgb(240, 123, 28)">{{ song_dir }}</span>
+  {% endtrans %}
+</h2>
+
+<hr />
+
+{% if admin %}
+<h2>{% trans %}Update{% endtrans %}</h2>
+<p>{% trans %}Change song directory:{% endtrans %}</p> 
+<ul>
+    <li>
+      {% trans -%}
+      ❗Make sure your hard drive is connected prior to changing the default song directory.
+      {% endtrans %}
+    </li>
+    <li>
+      {% trans -%}
+      ❗Once the directory is changed, you will need to refresh/rescan the new directory.
+      {% endtrans %}
+    </li>
+    <li>
+      🎯Click <button class='red-here-button' id='refresh-button'>HERE</button> to rescan/refresh.
+    </li>
+</ul>
+<br>
+  {# MSG: Title for change of song directory. #}
+  <p>Enter the directory path (e.g., /myfiles/mysongs):</p>
+  <form id='change_dir-form' action="{{ url_for('change_dir') }}" method="post">
+
+    <div class="field has-addons" style="margin-bottom: 5px ">
+      <div class="control" style="width:100%; max-width:350px">
+        <input name="song_dir" class="input" ></input>
+      </div>
+      <div class="control">
+        {# MSG: Text on submit button for the song directory change. #}
+        <button id="change_dir-button" type="submit" class="button is-rounded">
+          {% trans %}Change{% endtrans %}</button>
+      </div>
+    </div>
+  </form>
+{% endif %}
+
+{% endblock %}
