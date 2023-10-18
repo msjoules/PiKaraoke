@@ -239,11 +239,11 @@ class Karaoke:
         except CalledProcessError as e:
             output = e.output.decode("utf8")
         logging.info(output)
-        if "You installed yt-dlp with pip or using the wheel from PyPi" in output:
+        if "pip" in output:
             try:
                 logging.info("Attempting youtube-dl upgrade via pip3...")
                 output = check_output(
-                    ["pip3", "install", "--upgrade", "yt-dlp"]
+                    ["sudo", "pip3", "install", "--upgrade", "yt-dlp"]
                 ).decode("utf8")
             except FileNotFoundError:
                 logging.info("Attempting youtube-dl upgrade via pip...")
