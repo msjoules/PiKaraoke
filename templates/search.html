@@ -35,6 +35,7 @@
 </style>
 <script>
   $(function () {
+    var user = Cookies.get("user");
 
     $("#search_result_selector").focus();
 
@@ -45,12 +46,23 @@
     });
 
     $("#download-button").click(function () {
-      if (!$("#download-button").is('[disabled=disabled]')) {
-        $("#download-button").addClass("is-loading");
+      if (user && user.trim() !== "") {
+          // User is defined and not an empty string after trimming, allow download
+         $("#download-button").addClass("is-loading");
+      }
+      else {
+        // User is not defined or is an empty string, do not allow download
+        alert("Please enter a valid user name to proceed with the download.");
+        // This will prevent the default action of the button (i.e., the navigation to the download page)
+        event.preventDefault(); 
       }
     });
-
     $("#add-queue-link").click(function () {
+      if (!user && user.trim() == "") {
+        // User is not defined or is an empty string, do not allow adding to queue
+        $("#add-queue-link").is('[disabled=disabled]');
+        event.preventDefault();
+      }
  
     });
 
@@ -114,7 +126,8 @@
           $("#search-link").attr("disabled", "true");
           $("#add-queue-link").hide();
           $("#search-link").show();
-        } else {
+        }
+         else {
           $("#add-queue-link").removeAttr("disabled");
           $("#search-link").removeAttr("disabled");
           $("#add-queue-link").show();
@@ -243,28 +256,25 @@
     // handle direct download url input change
     $('#direct-download-url').on('input', function () { 
       var v = $('#direct-download-url').val()
+      if (user && user.trim() !== "") {
+          // User is defined and not an empty string after trimming, allow download
       if (isYoutubeURL(v)) {
         $('#direct-download-button').removeAttr("disabled")
       }
       else {
         $('#direct-download-button').attr("disabled", true)
       }
+    } 
+      else {
+        // User is not defined or is an empty string, do not allow download
+        alert("Please enter a valid user name to proceed with the download.");
+        // This will prevent the default action of the button (i.e., the navigation to the download page)
+        event.preventDefault(); 
+        }
     });
 
-    var user = Cookies.get("user");
-
-    if (!user) {
-        let name = window.prompt(
-          // {# MSG: Prompt which asks the user their name when they first navigate to the page. #}
-          "{{ _('Please enter your name. This will show up next to the songs you queue up from this device.') }}"
-        );
-        if (name) {
-          Cookies.set("user", name , { expires: 3650 })
-        }
-        location.reload()
-      }
-
     $(".song-added-by").val(user)
+
   });
  
   function isYoutubeURL(s) {
@@ -335,6 +345,11 @@
             If the song doesn't appear in the "Available Songs" dropdown, click 'Search' to find it on Youtube
           {%- endtrans %}
         </p>
+        <p class="help">{% trans -%}❗You MUST enter a user name in order to add songs to the queue.{%- endtrans %}</p>
+        <p class="help">{% trans -%}❗You MUST enter a user name in order to download songs.{%- endtrans %}</p>
+        <a class="help", href=/username
+        {# MSG: Text on the link to add user name. #}>
+        {% trans %}🎯 Click here to enter user name{% endtrans %}</a>
       </div>
     </form>
   </div>
