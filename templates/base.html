@@ -16,6 +16,7 @@
   <link rel="icon" type="image/png" href="{{  url_for('static', filename='images/microphone.png') }}">
   <!-- <link rel="stylesheet" href="{{  url_for('static', filename='fontello/css/fontello.css') }}"> -->
   <link rel="stylesheet" href="/static/fontello/css/fontello.css?cachebust=1">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
 
   <script>
 
@@ -56,6 +57,12 @@
       if (currentPath == "/browse") {
         $("#browse").addClass("is-active")
       }
+      if (currentPath == "/storage") {
+        $("#storage").addClass("is-active")
+      }
+      if (currentPath == "/current-user") {
+        $("#current-user").addClass("is-active")
+      }
       if (currentPath == "/info") {
         $("#info").addClass("is-active")
       }
@@ -68,26 +75,10 @@
 
       if (currentUser) {
         $("#current-user span").text(currentUser)
-        $("#current-user").removeClass("is-hidden");
-      };
-
-      $('#current-user').click(function(e) {
-        e.preventDefault();
-        let name = window.prompt(
-          // Use a javascript format string, so translators only need to see a regular
-          // parametric translation instead of asking them to create valid javascript template.
-          // {# MSG: Prompt when changing the current profile name. #}
-          `{% trans currentUser="${currentUser}" -%}
-            Do you want to change the name of the person using this device? This will show up on queued songs. Current: {{ currentUser }}
-          {%- endtrans %}`
-        );
-        if (name) {
-          Cookies.set("user", name, { expires: 3650 })
-        }
-        location.reload();
-      });
+      }
 
     });
+
   </script>
   {% block scripts %}
   {% endblock %}
@@ -144,7 +135,7 @@
         </a>
 
         <a id="queue" class="navbar-item" href="{{ url_for('queue') }}">
-          <i class="icon icon-list-numbered" title="Queue"></i>
+          <i class="material-icons">playlist_add_check</i>
           {# MSG: Navigation link for the queue page. #}
           <span>{% trans %}Queue{% endtrans %}</span>
         </a>
@@ -154,10 +145,17 @@
           <span>{% trans %}Search{% endtrans %}</span>
         </a>
         <a id="browse" class="navbar-item" href="{{ url_for('browse') }}">
-          <i class="icon icon-folder-open-empty" title="Browse"></i>
+          <i class="material-icons">grid_view</i>
           {# MSG: Navigation link for the page where the user can add existing songs to the queue. #}
           <span>{% trans %}Browse{% endtrans %}</span>
         </a>
+        {% if admin %}
+        <a id="storage" class="navbar-item" href="{{ url_for('storage') }}">
+          <i class="material-icons">library_music</i>
+          {# MSG: Navigation link for the page where the user can add existing songs to the queue. #}
+          <span>{% trans %}Storage{% endtrans %}</span>
+        </a>
+        {% endif %}
         <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
           <span aria-hidden="true"></span>
           <span aria-hidden="true"></span>
@@ -166,7 +164,7 @@
       </div>
       <div class="navbar-menu" id="menu">
         <div class="navbar-end">
-          <a id="current-user" class="navbar-item is-hidden" href="#">
+          <a id="current-user" class="navbar-item" href="{{ url_for('username') }}">
             <i class="icon  icon-mic-1" title="Current user"></i>
             <span></span>
           </a>
