@@ -3,6 +3,7 @@ import datetime
 import json
 import logging
 import os
+import os.path
 import signal
 import subprocess
 import sys
@@ -15,7 +16,7 @@ import flask_babel
 import psutil
 from flask import (Flask, flash, jsonify, make_response, redirect,
                    render_template, request, send_file, send_from_directory,
-                   url_for)
+                   url_for, session)
 from flask_babel import Babel
 from flask_paginate import Pagination, get_page_parameter
 
@@ -38,7 +39,8 @@ app.jinja_env.add_extension('jinja2.ext.i18n')
 app.config['BABEL_TRANSLATION_DIRECTORIES'] = 'translations'
 babel = Babel(app)
 site_name = "PiKaraoke"
-admin_password = None
+# added default password
+admin_password = "mypi"
 
 def filename_from_path(file_path, remove_youtube_id=True):
     rc = os.path.basename(file_path)
@@ -101,6 +103,25 @@ def auth():
 @app.route("/login")
 def login():
     return render_template("login.html")
+
+@app.route("/username", methods=["GET", "POST"])
+def username():
+
+    if request.method == 'POST':
+        # Handle form submission here
+        name = request.form.get('username').strip()
+
+        if (name ==''):
+            flash('Please enter a valid user name if you want to add songs to the queue.', 'is-danger')
+            return render_template("username.html")
+        else:
+            resp = make_response(redirect('/'))
+            resp.set_cookie("user", name, max_age=1*24*60*60)  # Set cookie that expires in 1 day
+            flash('User name set! You can add songs to the queue.', "is-success")
+            return resp
+        
+    return render_template("username.html")
+
 
 @app.route("/logout")
 def logout():
@@ -343,17 +364,7 @@ def download():
     t.daemon = True
     t.start()
 
-    flash_message = (
-        "Download started: '"
-        + song
-        + "'. This may take a couple of minutes to complete. "
-    )
-
-    if queue:
-        flash_message += "Song will be added to queue."
-    else:
-        flash_message += 'Song will appear in the "available songs" list.'
-    flash(flash_message, "is-info")
+    flash("WARNING: Your download might fail.  If so, contact management.", "is-danger")
     return redirect(url_for("search"))
 
 
@@ -473,6 +484,9 @@ def info():
     # youtube-dl
     youtubedl_version = k.youtubedl_version
 
+    # The song directory is the same as the download_path
+    song_dir = k.download_path
+
     is_pi = get_platform() == "raspberry_pi"
 
     return render_template(
@@ -487,9 +501,23 @@ def info():
         is_pi=is_pi,
         pikaraoke_version=VERSION,
         admin=is_admin(),
-        admin_enabled=admin_password != None
+        admin_enabled=admin_password != None,
+        song_dir = song_dir,
+
     )
 
+@app.route("/storage")
+def storage():
+    song_dir = k.download_path
+
+    is_pi = get_platform() == "raspberry_pi"
+
+    return render_template(
+        "storage.html",
+        is_pi=is_pi,
+        admin=is_admin(),
+        song_dir = song_dir
+        )
 
 # Delay system commands to allow redirect to render first
 def delayed_halt(cmd):
@@ -513,6 +541,32 @@ def update_youtube_dl():
     time.sleep(3)
     k.upgrade_youtubedl()
 
+@app.route("/change_dir", methods=["GET", "POST"])
+def change_dir():
+    if (is_admin()):   
+        if request.method == "POST":
+            new_dir = request.form.get("song_dir")
+            print(f"This is the song directory from the change directory route {new_dir}") # for debugging
+            if os.path.isdir(new_dir) and new_dir.endswith('/'):
+                # Handle form submission here
+                k.download_path = new_dir
+                flash("Song directory changed. Please rescan the song directory for the changes to take effect!", "is-info")
+                return redirect(url_for("storage"))
+            elif os.path.isdir(new_dir) and not new_dir.endswith('/'):
+                k.download_path = new_dir + '/'
+                # Message shown after changing song directory
+                flash("Song directory changed. Please rescan the song directory for the changes to take effect!", "is-info")
+                return redirect(url_for("storage"))
+            else:
+                print("ERROR no valid directory from route") # for debugging
+                flash("Not a valid directory!", "is-danger")
+                return redirect(url_for("storage"))
+        else:
+            print('ERROR: Nothing posting') # for debugging
+            return redirect(url_for("storage"))
+    else:
+        flash("You don't have permission to shut down", "is-danger")
+
 @app.route("/update_ytdl")
 def update_ytdl():
     if (is_admin()):
@@ -531,7 +585,7 @@ def refresh():
     if (is_admin()):
         k.get_available_songs()
     else:
-        flash("You don't have permission to shut down", "is-danger")
+        flash("You don't have permission to refresh", "is-danger")
     return redirect(url_for("browse"))
 
 @app.route("/quit")
@@ -861,3 +915,7 @@ if __name__ == "__main__":
         cherrypy.engine.exit()
 
     sys.exit()
+
+    # Set the server.shutdown_timeout configuration
+    # The above SIGTERM handler didn't work completely so adding this as a safeguard
+    cherrypy.config.update({ 'server.shutdown_timeout': 1 })
