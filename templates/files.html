@@ -25,8 +25,18 @@
           // {# MSG: Prompt which asks the user their name when they first navigate to the page. #}
           "{{ _('Please enter your name. This will show up next to the songs you queue up from this device.') }}"
         );
-        if (name) {
-         Cookies.set("user", name, { expires: 3650 })
+        if (!name){
+          // Display error message
+          alert("{{ _('You MUST enter a user name if you want to add songs to the queue!') }}", "is-danger");
+          return;
+        }
+        else if (name.trim() ==''){
+          // Display error message
+          alert("{{ _('Please enter a valid user name if you want to add songs to the queue.') }}", "is-danger");
+          return;
+        }
+        else {
+         Cookies.set("user", name, { expires: 1440 })
          user = Cookies.get("user") 
         }
       }
