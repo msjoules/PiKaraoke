@@ -57,6 +57,19 @@
         event.preventDefault(); 
       }
     });
+    $("#ytdirect-button").click(function () {
+      if (user && user.trim() !== "") {
+          // User is defined and not an empty string after trimming, allow youtube direct viewing
+         $("#ytdirect-button").addClass("is-loading");
+      }
+      else {
+        // User is not defined or is an empty string, do not allow download
+        alert("Please enter a valid user name to proceed with the direct viewing.");
+        // This will prevent the default action of the button (i.e., the navigation to the youtube direct viewing page)
+        event.preventDefault(); 
+      }
+    });
+
     $("#add-queue-link").click(function () {
       if (!user && user.trim() == "") {
         // User is not defined or is an empty string, do not allow adding to queue
@@ -448,6 +461,11 @@
         <button class="button is-success is-rounded" id="download-button" type="submit">
           {# MSG: Label on the button which starts the download of the selected song. #}
           {%- trans %}Download{% endtrans -%}
+        </button>
+        <button class="button is-success is-rounded" id="view-button" type="button" 
+        onclick="window.location.href='/yt_direct.html?video_id=' + 
+        document.getElementById('search_result_selector').selectedOptions[0].getAttribute('data-ytID')">
+        {% trans %}View{% endtrans %}
         </button>
       </div>
     </form>

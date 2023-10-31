@@ -286,6 +286,10 @@ def search():
         search_string=search_string,
     )
 
+@app.route('/yt_direct.html')
+def yt_direct():
+    return render_template('yt_direct.html')
+
 @app.route("/autocomplete")
 def autocomplete():
     q = request.args.get('q').lower()
@@ -914,8 +918,10 @@ if __name__ == "__main__":
         k.run()
         cherrypy.engine.exit()
 
+        # Set the server.shutdown_timeout configuration
+        # The above SIGTERM handler didn't work completely so adding this as a safeguard
+        cherrypy.config.update({ 'server.shutdown_timeout': 1 })
+
     sys.exit()
 
-    # Set the server.shutdown_timeout configuration
-    # The above SIGTERM handler didn't work completely so adding this as a safeguard
-    cherrypy.config.update({ 'server.shutdown_timeout': 1 })
+    

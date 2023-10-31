@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block scripts %}
+<style>
+    .videowrapper {
+        position: relative;
+        padding-bottom: 45%; /* for 16:9 aspect ratio */
+        padding-top: 25px;
+        height: 0;
+    }
+    .videowrapper iframe {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
+</style>
+
+<script>
+    window.onload = function() {
+        var urlParams = new URLSearchParams(window.location.search);
+        var videoId = urlParams.get('video_id');
+
+        var player = document.getElementById('player');
+        player.innerHTML = 
+        '<iframe src="https://www.youtube-nocookie.com/embed/' + videoId + 
+        '" frameborder="0" allowfullscreen></iframe>';
+    }
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="videowrapper" id="player"></div>
+<a href="/search">Back to search</a>
+{% endblock %}

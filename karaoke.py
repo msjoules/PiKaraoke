@@ -64,7 +64,7 @@ class Karaoke:
         vlc_path=None,
         vlc_port=None,
         logo_path=None,
-        show_overlay=False
+        show_overlay=False,
     ):
 
         # override with supplied constructor args if provided
@@ -85,7 +85,7 @@ class Karaoke:
         self.vlc_path = vlc_path
         self.vlc_port = vlc_port
         self.logo_path = self.default_logo_path if logo_path == None else logo_path
-        self.show_overlay = show_overlay
+        self.show_overlay = show_overlay,
 
         # other initializations
         self.platform = get_platform()
@@ -234,6 +234,8 @@ class Karaoke:
         logging.info(
             "Upgrading youtube-dl, current version: %s" % self.youtubedl_version
         )
+        os.environ["PATH"] += os.pathsep + self.youtubedl_path # add path
+
         try:  
             output = check_output([self.youtubedl_path, "-U"], stderr=subprocess.STDOUT).decode("utf8").strip()
         except CalledProcessError as e:
@@ -243,7 +245,7 @@ class Karaoke:
             try:
                 logging.info("Attempting youtube-dl upgrade via pip3...")
                 output = check_output(
-                    ["sudo", "pip3", "install", "--upgrade", "yt-dlp"]
+                    ["pip3", "install", "--upgrade", "yt-dlp"]
                 ).decode("utf8")
             except FileNotFoundError:
                 logging.info("Attempting youtube-dl upgrade via pip...")
@@ -475,7 +477,7 @@ class Karaoke:
 
     def get_available_songs(self):
         logging.info("Fetching available songs in: " + self.download_path)
-        types = ['.mp4', '.mp3', '.zip', '.mkv', '.avi', '.webm', '.mov']
+        types = ['.mp4', '.mp3', '.zip', '.mkv', '.avi', '.webm', '.mov', '.wav']
         files_grabbed = []
         P=Path(self.download_path)
         for file in P.rglob('*.*'):
