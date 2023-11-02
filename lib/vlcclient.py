@@ -143,7 +143,9 @@ class VLCClient:
         else:
             return file_path
 
-    def play_file(self, file_path, additional_parameters=None):
+    def play_file(self, file_path, playmode, additional_parameters=None):
+        streamer = ["--sout", "#standard{access=http,mux=ts,dst=:8081}"]
+        duplicator = ["--sout", "#duplicate{dst=display,dst='standard{access=http,mux=ts,dst=:8081}'}"]
         try: 
             file_path = self.process_file(file_path)
             if self.is_playing() or self.is_paused():
@@ -154,17 +156,28 @@ class VLCClient:
             if self.platform == "windows":
                 file_path = r"{}".format(file_path.replace('/','\\'))
             if additional_parameters == None:
-                command = self.cmd_base + [file_path]
+                if playmode == 'network_stream':
+                    command = self.cmd_base + streamer + [file_path]
+                elif playmode == 'duplicate':
+                    command = self.cmd_base + duplicator + [file_path]
+                else:
+                    command = self.cmd_base + [file_path]
             else:
-                command = self.cmd_base + additional_parameters + [file_path]
+                if playmode == 'network_stream':
+                    command = self.cmd_base + additional_parameters + streamer + [file_path]
+                elif playmode == 'duplicate':
+                    command = self.cmd_base + additional_parameters + duplicator + [file_path]
+                else:
+                    command = self.cmd_base + additional_parameters + [file_path]
+                    
             logging.debug("VLC Command: %s" % command)
             self.process = subprocess.Popen(
                 command, shell=(self.platform == "windows"), stdin=subprocess.PIPE
             )
         except Exception as e:
             logging.error("Playing file failed: " + str(e))
-
-    def play_file_transpose(self, file_path, semitones):
+    
+    def play_file_transpose(self, file_path, playmode, semitones):
         # --speex-resampler-quality=<integer [0 .. 10]>
         #  Resampling quality (0 = worst and fastest, 10 = best and slowest).
 
@@ -195,7 +208,7 @@ class VLCClient:
 
         self.is_transposing = True
         logging.debug("Transposing file...")
-        self.play_file(file_path, params)
+        self.play_file(file_path, playmode, params)
 
         # Prevent is_running() from returning False while we're transposing
         s = Timer(2.0, self.set_transposing_complete)
