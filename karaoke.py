@@ -64,7 +64,8 @@ class Karaoke:
         vlc_path=None,
         vlc_port=None,
         logo_path=None,
-        show_overlay=False
+        show_overlay=False,
+        playmode='splash',
     ):
 
         # override with supplied constructor args if provided
@@ -85,7 +86,8 @@ class Karaoke:
         self.vlc_path = vlc_path
         self.vlc_port = vlc_port
         self.logo_path = self.default_logo_path if logo_path == None else logo_path
-        self.show_overlay = show_overlay
+        self.show_overlay = show_overlay,
+        self.playmode = playmode
 
         # other initializations
         self.platform = get_platform()
@@ -234,6 +236,8 @@ class Karaoke:
         logging.info(
             "Upgrading youtube-dl, current version: %s" % self.youtubedl_version
         )
+        os.environ["PATH"] += os.pathsep + self.youtubedl_path # add path
+
         try:  
             output = check_output([self.youtubedl_path, "-U"], stderr=subprocess.STDOUT).decode("utf8").strip()
         except CalledProcessError as e:
@@ -243,7 +247,7 @@ class Karaoke:
             try:
                 logging.info("Attempting youtube-dl upgrade via pip3...")
                 output = check_output(
-                    ["sudo", "pip3", "install", "--upgrade", "yt-dlp"]
+                    ["pip3", "install", "--upgrade", "yt-dlp"]
                 ).decode("utf8")
             except FileNotFoundError:
                 logging.info("Attempting youtube-dl upgrade via pip...")
@@ -475,7 +479,7 @@ class Karaoke:
 
     def get_available_songs(self):
         logging.info("Fetching available songs in: " + self.download_path)
-        types = ['.mp4', '.mp3', '.zip', '.mkv', '.avi', '.webm', '.mov']
+        types = ['.mp4', '.mp3', '.zip', '.mkv', '.avi', '.webm', '.mov', '.wav']
         files_grabbed = []
         P=Path(self.download_path)
         for file in P.rglob('*.*'):
@@ -548,9 +552,10 @@ class Karaoke:
         if self.use_vlc:
             logging.info("Playing video in VLC: " + self.now_playing)
             if semitones == 0:
-                self.vlcclient.play_file(file_path)
+                self.vlcclient.play_file(file_path, self.playmode)
             else:
-                self.vlcclient.play_file_transpose(file_path, semitones)
+                # self.vlcclient.play_file_transpose(file_path, semitones, self.playmode)
+                self.vlcclient.play_file_transpose(file_path, self.playmode, semitones)
         else:
             logging.info("Playing video in omxplayer: " + self.now_playing)
             self.omxclient.play_file(file_path)
@@ -783,7 +788,7 @@ class Karaoke:
                             i += self.loop_interval
                         self.play_file(self.queue[0]["file"])
                         self.now_playing_user=self.queue[0]["user"]
-                        self.queue.pop(0)
+                        self.queue.pop(0)                        
                 elif not pygame.display.get_active() and not self.is_file_playing():
                     self.pygame_reset_screen()
                 self.handle_run_loop()
