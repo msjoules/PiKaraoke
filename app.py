@@ -41,6 +41,7 @@ babel = Babel(app)
 site_name = "PiKaraoke"
 # added default password
 admin_password = "mypi"
+playmode = 'splash'
 
 def filename_from_path(file_path, remove_youtube_id=True):
     rc = os.path.basename(file_path)
@@ -829,10 +830,28 @@ if __name__ == "__main__":
         action="store_true",
         required=False,
     ),
+    parser.add_argument(
+        "--network_stream",
+        action="store_true",
+        help="Stream via LAN port 8081 to other devices on your network. Doesn't show on splash screen.",
+        required=False,
+    ),
+    parser.add_argument(
+        "--duplicate",
+        action="store_true",
+        help="Multicast to splash screen and stream via LAN port 8081 to other devices on your network.",
+        required=False,
+    ),
     args = parser.parse_args()
 
     if (args.admin_password):
         admin_password = args.admin_password
+
+    if (args.network_stream):
+        playmode = 'network_stream'
+    
+    elif (args.duplicate):
+        playmode = 'duplicate'
 
     app.jinja_env.globals.update(filename_from_path=filename_from_path)
     app.jinja_env.globals.update(url_escape=quote)
@@ -891,7 +910,9 @@ if __name__ == "__main__":
         vlc_path=args.vlc_path,
         vlc_port=args.vlc_port,
         logo_path=args.logo_path,
-        show_overlay=args.show_overlay
+        show_overlay=args.show_overlay,
+        playmode=playmode,
+
     )
 
     if (args.developer_mode):
@@ -914,8 +935,8 @@ if __name__ == "__main__":
         k.run()
         cherrypy.engine.exit()
 
-    sys.exit()
-
     # Set the server.shutdown_timeout configuration
     # The above SIGTERM handler didn't work completely so adding this as a safeguard
     cherrypy.config.update({ 'server.shutdown_timeout': 1 })
+
+    sys.exit()
