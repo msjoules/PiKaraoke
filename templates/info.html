@@ -65,13 +65,11 @@
       URL of {{site_title}}:
     {%- endtrans -%}
   </p>
-  <p class="is-size-4 has-text-warning has-text-centered">{{ url }}</p>
+  <p class="is-size-6 has-text-warning has-text-centered">{{ url }}</p>
   {# MSG: Label before a QR code which brings a frind (pal) to the main page if scanned, so they can also add songs. QR code follows this text. #}
-  <p>{% trans %}Handy URL QR code to share with a pal:{% endtrans %}</p>
-  <img id="qr-img" width="300px" src="{{ url_for('qrcode') }}" style="image-rendering: pixelated" />
+  <p>{% trans %}QR code:{% endtrans %}</p>
+  <img id="qr-img" width="150px" src="{{ url_for('qrcode') }}" style="image-rendering: pixelated" />
 
-  {# MSG: Label before a link to the Splash screen. #}
-  <p><a href="{{ url_for('splash') }}">{% trans %}Open splash screen{% endtrans %}</a></p>
   </div>
 
 <hr />
@@ -94,92 +92,87 @@
 <hr />
 
 {% if admin %}
-{# MSG: Title of the updates section. #}
-<h1>{% trans %}Updates{% endtrans %}</h1>
-<ul>
-  {# MSG: Label before a link which forces Pikaraoke to rescan and pick up any new songs. #}
-  <li>{% trans %}Refresh the song list:{% endtrans %}</li> 
-  {# MSG: Help text explaining the Rescan song directory link. #}
-  <p class="help">{% trans -%}
-  ❗You should only need to do this if you manually copied files to the download directory 
-  while pikaraoke was running.
-  {%- endtrans %}</p>
-<ul>
-  <li>
-    <a href="/refresh">
-    {# MSG: Text on the link which forces Pikaraoke to rescan and pick up any new songs. #}
-    {% trans %}🎯 Rescan song directory{% endtrans %}</a>
-  </li>
-</ul>
-<br>
-  <li>{% trans %}Update Youtube:{% endtrans %}</li> 
-  {# MSG: Text explaining why you might want to update youtube-dl. #}
-  <p class="help">{% trans %}
-  ❗If downloads or searches stopped working, &nbsp; updating youtube-dl will probably fix it.
-  {% endtrans %}</p>
-  <p class="help">{% trans %}
-  ❗The current installed version is: "{{ youtubedl_version }}"
-  {% endtrans %}</p>  
-<ul>
-  <li>
-    <a id="update-ytdl-link" href="{{ url_for('update_ytdl') }}">
-    {# MSG: Text for the link which will try and update youtube-dl on the machine running Pikaraoke. #}
-    {% trans %}🎯 Update youtube-dl{% endtrans %}</a>
-  </li>
-</ul>
-<p class="help">
-  {# MSG: Help text which explains why updating youtube-dl can fail.  The log is a file on the machine running Pikaraoke. #}
-  {% trans -%}
-  Note:  This update link above may fail if you don't have proper file permissions. &nbsp;
-  Check the pikaraoke log for errors. 
-  {%- endtrans %}</p>
-</ul>
+  {# MSG: Title of the updates section. #}
+  <h1>{% trans %}Updates{% endtrans %}</h1>
+  <ul>
+    {# MSG: Label before a link which forces Pikaraoke to rescan and pick up any new songs. #}
+    <li>{% trans %}Refresh the song list:{% endtrans %}</li> 
+    {# MSG: Help text explaining the Rescan song directory link. #}
+    <p class="help">{% trans -%}
+    ❗You should only need to do this if you manually copied files to the download directory 
+    while pikaraoke was running.
+    {%- endtrans %}</p>
+      <p>&nbsp;&nbsp;&nbsp;&nbsp;
+      <a href="/refresh">
+      {# MSG: Text on the link which forces Pikaraoke to rescan and pick up any new songs. #}
+      {% trans %}🎯 Rescan song directory{% endtrans %}</a> 
+      </p>
+    <br>
+    <li>{% trans %}Update YouTube:{% endtrans %}</li> 
+    {# MSG: Text explaining why you might want to update youtube-dl. #}
+    <p class="help">{% trans %}
+    ❗If downloads or searches stopped working, updating yt-dl will probably fix it.
+    {% endtrans %}</p>
+    <p class="help">{% trans %}
+    ❗The current installed version is: "{{ youtubedl_version }}"
+    {% endtrans %}</p>  
+      <p>&nbsp;&nbsp;&nbsp;&nbsp;
+        <a id="update-ytdl-link" href="{{ url_for('update_ytdl') }}">
+        {# MSG: Text for the link which will try and update yt-dl on the machine running Pikaraoke. #}
+        {% trans %}🎯 Update yt-dl{% endtrans %}</a>
+      </p>
+    <p class="help">
+    {# MSG: Help text which explains why updating youtube-dl can fail.  The log is a file on the machine running Pikaraoke. #}
+    {% trans -%}
+    Note:  The update link above may fail if you don't have proper file permissions. &nbsp;
+    Check the pikaraoke log for errors. 
+    {%- endtrans %}</p>
+  </ul>
 
-<hr />
+  <hr />
 
-{# MSG: Title of the section on shutting down / turning off the machine running Pikaraoke. #}
-<h1>{% trans %}Shutdown{% endtrans %}</h1>
-<p>
-  {# MSG: Explainitory text which explains why to use the shutdown link. #}
-  {% trans -%}
-  ❗Don't just pull the plug! &nbsp; Always shut down your server properly to avoid data corruption.
-  {%- endtrans %}
-</p>
-<ul>
-  {# MSG: Text for button which turns off Pikaraoke for everyone using it at your house. #}
-  <li><a id="quit-link" href="{{ url_for('quit') }}">{% trans %}Quit Pikaraoke{% endtrans %}</a></li>
-  {% if is_pi %}
-    {# MSG: Text for button which reboots the machine running Pikaraoke. #}
-    <li><a id="restart-link" href="{{ url_for('reboot') }}">{% trans %}Reboot System{% endtrans %}</a></li>
-    <li>
+  {# MSG: Title of the section on shutting down / turning off the machine running Pikaraoke. #}
+  <h1>{% trans %}Shutdown{% endtrans %}</h1>
+  <p>
+    {# MSG: Explainitory text which explains why to use the shutdown link. #}
+    {% trans -%}
+    ❗Don't just pull the plug! &nbsp; Always shut down your server properly to avoid data corruption.
+    {%- endtrans %}
+  </p>
+  <ul>
+    {# MSG: Text for button which turns off Pikaraoke for everyone using it at your house. #}
+    <li><a id="quit-link" href="{{ url_for('quit') }}">{% trans %}Quit Pikaraoke{% endtrans %}</a></li>
+    {% if is_pi %}
+      {# MSG: Text for button which reboots the machine running Pikaraoke. #}
+      <li><a id="restart-link" href="{{ url_for('reboot') }}">{% trans %}Reboot System{% endtrans %}</a></li>
       {# MSG: Text for button which turn soff the machine running Pikaraoke. #}
-      <a id="shutdown-link" href="{{ url_for('shutdown') }}">{% trans %}Shutdown System{% endtrans %}</a>
-    </li>
-  {% endif %}
-</ul>
+      <li><a id="shutdown-link" href="{{ url_for('shutdown') }}">{% trans %}Shutdown System{% endtrans %}</a></li>
+    {% endif %}
+  </ul>
 
-<hr />
+  <hr />
 
-{% if is_pi %}
-  {# MSG: Title for section containing a few other options on the Info page. #}
-  <h1>{% trans %}Other{% endtrans %}</h1>
-  <a id="expand-link" href="{{ url_for('expand_fs') }}">
-    {# MSG: Text for button#}
-    {% trans %}Expand Raspberry Pi filesystem{% endtrans %}
-  </a></li>
-  {# MSG: Explainitory text which explains why you might want to expand the filesystem. #}
-  <p class="help">{% trans -%}
-    If you just installed the pre-built pikaraoke pi image and your SD card is larger than 4GB, &nbsp;
-    you may want to expand the filesystem to utilize the remaining space. &nbsp; 
-    You only need to do this once. &nbsp; This will reboot the system.
-  {%- endtrans %}</p>
+  {% if is_pi %}
+    {# MSG: Title for section containing a few other options on the Info page. #}
+    <h1>{% trans %}Other{% endtrans %}</h1>
+    <a id="expand-link" href="{{ url_for('expand_fs') }}">
+      {# MSG: Text for button#}
+      {% trans %}Expand Raspberry Pi filesystem{% endtrans %}
+    </a></li>
+    {# MSG: Explainitory text which explains why you might want to expand the filesystem. #}
+    <p class="help">{% trans -%}
+      If you just installed the pre-built pikaraoke pi image and your SD card is larger than 4GB, &nbsp;
+      you may want to expand the filesystem to utilize the remaining space. &nbsp; 
+      You only need to do this once. &nbsp; This will reboot the system.
+    {%- endtrans %}</p>
 {% endif %}
 
 <hr/>
+
 {% if admin_enabled %}
   {# MSG: Link which will log out the user from admin mode. #}
   <p>{% trans logout_url=url_for('logout') -%}
-    Disable admin mode: <a href="{{ logout_url }}">Log out</a>
+    Disable admin mode:&nbsp; <a href="{{ logout_url }}">Log out</a>
   {%- endtrans %}</p>
 {% endif %}
 {% else %} {# from if admin #}

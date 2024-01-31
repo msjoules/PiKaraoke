@@ -20,13 +20,39 @@
 
   <script>
 
+    function getSemitonesLabel(value) {
+      if (value > 0) {
+        return "+" + value + " semitones";
+      } else {
+        return value + " semitones";
+      }
+    }
+
+
     function showNotification(message, categoryClass, timeout=3000) {
-      console.log("Showing notification")
       $("#notification-alt").addClass(categoryClass)
       $("#notification-alt div").text(message)
       $("#notification-alt").fadeIn()
       setTimeout(function () {$("#notification-alt").fadeOut()}, timeout)
       setTimeout(function () {$("#notification-alt").removeClass(categoryClass)}, timeout + 750)
+    }
+
+    function setUserCookie(reload=false) {
+      var user = Cookies.get("user");
+      if (!user) {
+        let name = window.prompt(
+          // {# MSG: Prompt which asks the user their name when they first try to add to the queue. #}
+          "{{ _('Please enter your name. This will show up next to the songs you queue up from this device.') }}"
+        );
+        if (name) {
+          Cookies.set("user", name, { expires: 3650 });
+        }
+        reload && location.reload();
+      }
+    }
+
+    function getUserCookie() {
+      return Cookies.get("user");
     }
 
     $(function () {
@@ -75,10 +101,26 @@
 
       if (currentUser) {
         $("#current-user span").text(currentUser)
-      }
+        $("#current-user").removeClass("is-hidden");
+      };
+
+      $('#current-user').click(function(e) {
+        e.preventDefault();
+        let name = window.prompt(
+          // Use a javascript format string, so translators only need to see a regular
+          // parametric translation instead of asking them to create valid javascript template.
+          // {# MSG: Prompt when changing the current profile name. #}
+          `{% trans currentUser="${currentUser}" -%}
+            Do you want to change the name of the person using this device? This will show up on queued songs. Current: {{ currentUser }}
+          {%- endtrans %}`
+        );
+        if (name) {
+          Cookies.set("user", name, { expires: 3650 })
+        }
+        location.reload();
+      });
 
     });
-
   </script>
   {% block scripts %}
   {% endblock %}
@@ -105,7 +147,7 @@
   tr:nth-child(even) {
     background-color: rgb(50, 55, 55);
   }
-  @media screen and (max-width: 500px) {
+  @media screen and (max-width: 1088px) {
     .navbar-brand > .navbar-item > span {
       display: none;
     }
@@ -119,6 +161,10 @@
     body {
       min-height: 120vh;
     }
+    .navbar-menu.is-active {
+      position: absolute;
+      right: 0px;
+    }
   }
 </style>
 
@@ -129,7 +175,7 @@
     <nav class="navbar" role="navigation" aria-label="main navigation">
       <div class="navbar-brand" id="brand" style="padding-left: 10px">
         <a id="home" class="navbar-item" href="{{ url_for('home') }}">
-          <i class="icon icon-home-2" title="Home"></i>
+          <i class="material-icons">tune</i>
           {# MSG: Navigation link for the home page. #}
           <span>{% trans %}Home{% endtrans %}</span>
         </a>
@@ -145,13 +191,13 @@
           <span>{% trans %}Search{% endtrans %}</span>
         </a>
         <a id="browse" class="navbar-item" href="{{ url_for('browse') }}">
-          <i class="material-icons">grid_view</i>
+          <i class="material-icons">library_music</i>
           {# MSG: Navigation link for the page where the user can add existing songs to the queue. #}
           <span>{% trans %}Browse{% endtrans %}</span>
         </a>
         {% if admin %}
         <a id="storage" class="navbar-item" href="{{ url_for('storage') }}">
-          <i class="material-icons">library_music</i>
+          <i class="material-icons">save_as</i>
           {# MSG: Navigation link for the page where the user can add existing songs to the queue. #}
           <span>{% trans %}Storage{% endtrans %}</span>
         </a>
@@ -178,7 +224,7 @@
 
     {% if get_flashed_messages() %}
     {% for category, message in get_flashed_messages(with_categories=true) %}
-    <div id="notification" class="notification {{category}}">
+    <div id="notification" class="notification {{category}}" style="display: none">
       <button id="notification-close" class="delete"></button>
       <div class="flash">{{ message }}</div>
     </div>
@@ -186,7 +232,7 @@
     {% endif %}
 
     <!-- Alternate notification for js-fired notifications using showNotification -->
-    <div id="notification-alt" class="notification">
+    <div id="notification-alt" class="notification" style="display: none">
       <button id="notification-close" class="delete"></button>
       <div class="flash"></div>
     </div>
