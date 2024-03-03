@@ -4,9 +4,8 @@
 <script>
 
   $(function () {
-
-
-
+    // Set focus (cursor) on input field so you don't need your mouse
+    $("#admin-password").focus();
   });
 
 </script>
@@ -28,7 +27,7 @@
 
   <div class="field has-addons" style="margin-bottom: 5px ">
     <div class="control" style="width:100%; max-width:350px">
-      <input type="password" name="admin-password" class="input" ></input>
+      <input id="admin-password" type="password" name="admin-password" class="input" ></input>
     </div>
     <div class="control">
       {# MSG: Text on submit button for the admin login form. #}

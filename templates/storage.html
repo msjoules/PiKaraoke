@@ -3,6 +3,9 @@
 {% block scripts %}
 <script>
   $(function () {
+    // Set focus (cursor) on input field so you don't need your mouse
+    $("#song_dir").focus();
+
     $("#change_dir-form").submit(function (e) {
       if (!window.confirm("Are you sure you want to change the song directory?")) {
         e.preventDefault();
@@ -69,7 +72,7 @@
 
     <div class="field has-addons" style="margin-bottom: 5px ">
       <div class="control" style="width:100%; max-width:350px">
-        <input name="song_dir" class="input" ></input>
+        <input id="song_dir" name="song_dir" class="input" ></input>
       </div>
       <div class="control">
         {# MSG: Text on submit button for the song directory change. #}

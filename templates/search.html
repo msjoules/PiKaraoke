@@ -37,8 +37,6 @@
   $(function () {
     var user = Cookies.get("user");
 
-    $("#search_result_selector").focus();
-
     $("#search-link").click(function () {
       if (!$("#search-link").is('[disabled=disabled]')) {
         $("#search-link").addClass("is-loading");
@@ -107,6 +105,9 @@
             that.ignoreFocusOpen = false;
           }, 50);
         });
+
+        // Set focus (cursor) on input field so you don't need your mouse
+        this.focus();
       },
 
       onFocus: function () {

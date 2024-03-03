@@ -37,13 +37,13 @@
       }
     });
 
-    $("#expand-link").click(function (e) {
-      e.preventDefault();
-      // {# MSG: Confirmation text when the user wants to expand the filesystem to take the entire SD card. #}
-      if (window.confirm("Are you sure you want to expand the filesystem? This will reboot your raspberry pi.")) {
-        location.href = this.href;
-      }
-    });
+    // $("#expand-link").click(function (e) {
+    //   e.preventDefault();
+    //   // {# MSG: Confirmation text when the user wants to expand the filesystem to take the entire SD card. #}
+    //   if (window.confirm("Are you sure you want to expand the filesystem? This will reboot your raspberry pi.")) {
+    //     location.href = this.href;
+    //   }
+    // });
   });
 </script>
 {% endblock %}
@@ -152,7 +152,7 @@
 
   <hr />
 
-  {% if is_pi %}
+  <!-- {% if is_pi %}
     {# MSG: Title for section containing a few other options on the Info page. #}
     <h1>{% trans %}Other{% endtrans %}</h1>
     <a id="expand-link" href="{{ url_for('expand_fs') }}">
@@ -167,7 +167,7 @@
     {%- endtrans %}</p>
 {% endif %}
 
-<hr/>
+<hr/> -->
 
 {% if admin_enabled %}
   {# MSG: Link which will log out the user from admin mode. #}

@@ -86,6 +86,9 @@
       if (currentPath == "/storage") {
         $("#storage").addClass("is-active")
       }
+      if (currentPath == "/quit") {
+        $("#quit").addClass("is-active")
+      }
       if (currentPath == "/current-user") {
         $("#current-user").addClass("is-active")
       }
@@ -201,6 +204,29 @@
           {# MSG: Navigation link for the page where the user can add existing songs to the queue. #}
           <span>{% trans %}Storage{% endtrans %}</span>
         </a>
+        {% endif %}
+        <!-- {% if admin %}
+        <a href="#" 
+          onclick="if(confirm('Are you sure you want to quit?')) 
+          { window.location.href = '{{ url_for('quit') }}'; }">
+          <i class="material-icons">power_settings_new</i>
+          {# MSG: Navigation link for the page where the user can add existing songs to the queue. #}
+          <span>{% trans %}Power Off{% endtrans %}</span>
+        </a>
+        {% endif %} -->
+        {% if admin %}
+        <a id="quitLink" class="navbar-item">
+            <i class="material-icons">power_settings_new</i>
+            <span>{% trans %}Power Off{% endtrans %}</span>
+        </a>
+        <script>
+        document.getElementById('quitLink').addEventListener('click', function(event) {
+            event.preventDefault();
+            if(confirm('Are you sure you want to quit?')) {
+                window.location.href = '{{ url_for('quit') }}';
+            }
+        });
+        </script>
         {% endif %}
         <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
           <span aria-hidden="true"></span>

@@ -4,9 +4,8 @@
 <script>
 
   $(function () {
-
-
-
+    // Set focus (cursor) on input field so you don't need your mouse
+    $("#username").focus();
   });
 
 </script>
@@ -29,7 +28,7 @@
 
   <div class="field has-addons" style="margin-bottom: 5px ">
     <div class="control" style="width:100%; max-width:350px">
-      <input name="username" class="input" ></input>
+      <input id="username" name="username" class="input" ></input>
     </div>
     <div class="control">
       {# MSG: Text on submit button for the user name form. #}
