@@ -132,7 +132,7 @@ def username():
             flash('User name set! You can add songs to the queue.', "is-success")
             return resp
         
-    return render_template("username.html")
+    return render_template("username.html", admin=is_admin())
 
 @app.route("/logout")
 def logout():
@@ -295,6 +295,7 @@ def search():
         songs=k.available_songs,
         search_results=search_results,
         search_string=search_string,
+        admin=is_admin()
     )
 
 @app.route("/autocomplete")
