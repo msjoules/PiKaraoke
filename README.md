@@ -15,8 +15,10 @@ My modifications focus mainly on the interface and my personal preferences:
 
 - Forced user names instead of assigning anonymous names
 - Default admin password:&ensp;  __mypi__
-- Allow changing of song directory from interface
-- Different icons
+- Allow changing of song directory from GUI
+- Power off directly from navigation bar means less clicks
+- Cursor appears directly in user entry fields, allowing immediate input
+- Use of different icons
 
 Everything runs pretty seamlessly on a NUC7i5 running Debian Bookworm.
 
