@@ -180,6 +180,9 @@
 
     $('#clear-search').on('click', function (e) {
       e.preventDefault();
+      // clear selected song from directory search
+      $select[0].selectize.clear();
+      // clear youtube search field
       $("#song-to-add-selectized").val("");
     });
 
