@@ -9,6 +9,14 @@
       $('#new_file_name').val(new_name);
     });
 
+    $('#transpose-saveto-user').click(function (e) {
+      var value = prompt("Please enter a semitone value:  ");
+      var username = prompt("Please enter the user's name:  ");
+      var file_path = $('input[name="old_file_name"]').val();
+      $.get("/transpose_save/" + value + "?file_path=" + encodeURIComponent(file_path) + 
+      "&username=" + encodeURIComponent(username));
+    });
+
     $('#suggest-title').click(function (e) {
       if ($.trim($('#new_file_name').val()) != "") {
         var format_name = clean_title($('#new_file_name').val(), title_case = true);
@@ -130,13 +138,8 @@
         <span class="button is-loading is-hidden suggest_loader" style="border:0;background-color:transparent;"></span>
         <span id="suggest_results"></span>
       </li>
+      <li><a id='transpose-saveto-user'>{% trans %}Save to user directory{% endtrans %}</a></li>
     </ul>
-    <div class="field">
-      <button class="button is-primary" id="search-button" type="submit">
-        {# MSG: Label on button which saves the changes. #}
-        {%- trans %}Save{% endtrans -%}
-      </button>
-    </div>
   </form>
 </div>
 

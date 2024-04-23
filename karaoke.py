@@ -6,6 +6,7 @@ import random
 import socket
 import subprocess
 import time
+import re
 from pathlib import Path
 from queue import Empty, Queue
 from subprocess import CalledProcessError, check_output
@@ -48,6 +49,7 @@ class Karaoke:
 
     is_playing = False
     is_paused = True
+    is_saving = False
     process = None
     qr_code_path = None
     base_path = os.path.dirname(__file__)
@@ -218,7 +220,7 @@ class Karaoke:
             try:
                 logging.info("Attempting youtube-dl upgrade via pip3...")
                 output = check_output(
-                    ["sudo", "pip3", "install", "--upgrade", "yt-dlp"]
+                    ["pip3", "install", "--upgrade", "yt-dlp"]
                 ).decode("utf8")
             except FileNotFoundError:
                 logging.info("Attempting youtube-dl upgrade via pip...")
@@ -340,6 +342,17 @@ class Karaoke:
         rc = os.path.splitext(rc)[0]
         rc = rc.split("---")[0]  # removes youtube id if present
         return rc
+    
+    def kiss_filename(self, file_path):
+        rc = os.path.basename(file_path)
+        # Split the filename at the first "-"
+        parts = rc.split("-", 1)
+        # Use a regular expression to remove everything after the first non-alphanumeric character in the second part
+        parts[1] = re.split("[^a-zA-Z0-9 ]", parts[1].strip())[0].strip()
+        # Join the parts back together with a "-"
+        new_filename = "- ".join(parts)
+        # Return the new filename
+        return new_filename
 
     def find_song_by_youtube_id(self, youtube_id):
         for each in self.available_songs:
@@ -355,7 +368,14 @@ class Karaoke:
         else:
             logging.error("Error parsing youtube id from url: " + url)
             return None
-
+      
+    def make_usersubdir(self, username):
+        save_basepath = f"{self.download_path}/k-users"
+        os.makedirs(os.path.join(save_basepath, username), exist_ok=True)
+        usr_subdir = f"{save_basepath}/{username}"
+        usr_subdir = os.path.normpath(usr_subdir)
+        return usr_subdir
+    
     def play_file(self, file_path, semitones=0):
         logging.info(f"Playing file: {file_path} transposed {semitones} semitones")
         stream_uid = int(time.time())
@@ -384,24 +404,24 @@ class Karaoke:
         acodec = "aac" if is_transposed else "copy"
         input = ffmpeg.input(fr.file_path)
         audio = input.audio.filter("rubberband", pitch=pitch) if is_transposed else input.audio
-
+        
         if (fr.cdg_file_path != None): #handle CDG files
             logging.info("Playing CDG/MP3 file: " + file_path)
             # copyts helps with sync issues, fps=25 prevents ffmpeg from needlessly encoding cdg at 300fps
             cdg_input = ffmpeg.input(fr.cdg_file_path, copyts=None)
             video = cdg_input.video.filter("fps", fps=25)
-            #cdg is very fussy about these flags. pi needs to encode to aac and cant just copy the mp3 stream
+            #cdg is very fussy about these flags. pi needs to encode to aac and cant just copy the mp3 stream            
             output = ffmpeg.output(audio, video, ffmpeg_url, 
-                                   vcodec=vcodec, acodec="aac", 
-                                   pix_fmt="yuv420p", listen=1, f="mp4", video_bitrate=vbitrate,
-                                   movflags="frag_keyframe+default_base_moof")     
+                                vcodec=vcodec, acodec="aac", 
+                                pix_fmt="yuv420p", listen=1, f="mp4", video_bitrate=vbitrate,
+                                movflags="frag_keyframe+default_base_moof")     
         else: 
             video = input.video
             output = ffmpeg.output(audio, video, ffmpeg_url, 
-                                   vcodec=vcodec, acodec=acodec, 
-                                   listen=1, f="mp4", video_bitrate=vbitrate,
-                                   movflags="frag_keyframe+default_base_moof")
-        
+                                vcodec=vcodec, acodec=acodec, 
+                                listen=1, f="mp4", video_bitrate=vbitrate,
+                                movflags="frag_keyframe+default_base_moof")
+    
         args = output.get_args()
         logging.debug(f"COMMAND: ffmpeg " + " ".join(args))
 
@@ -470,8 +490,59 @@ class Karaoke:
     def transpose_current(self, semitones):
         logging.info(f"Transposing current song {self.now_playing} by {semitones} semitones")
         # Insert the same song at the top of the queue with transposition
-        self.enqueue(self.now_playing_filename, self.now_playing_user, semitones, True)
+        self.enqueue(self.now_playing_filename, self.now_playing_user, semitones, add_to_front=True)
         self.skip()
+
+    def transpose_save(self, semitones, file_path, username):
+        usr_subdir = self.make_usersubdir(username)
+        kiss_usr_filename = self.kiss_filename(file_path)
+        str_semitones = f'+{semitones}' if semitones > 0 else f'{semitones}'
+        # save_path = f"{usr_subdir}/{kiss_usr_filename} {semitones} semitones - {username}.mp4"
+        save_path = f"{usr_subdir}/{kiss_usr_filename} {str_semitones} semitones - {username}.mp4"
+        logging.info(f"usr_subdir = {usr_subdir}; kiss_usr_filename = {kiss_usr_filename}; save_path = {save_path}")
+
+        pitch = 2**(semitones/12) #The pitch value is (2^x/12), where x represents the number of semitones
+
+        try:
+            fr = FileResolver(file_path)
+        except Exception as e:
+            logging.error("Error resolving file: " + str(e))
+            return False
+
+        # use h/w acceleration on pi
+        default_vcodec = "h264_v4l2m2m" if self.platform == "raspberry_pi" else "libx264" 
+        # just copy the video stream if it's an mp4 or webm file, since they are supported natively in html5 
+        # otherwise use the default h264 codec
+        vcodec = "copy" if fr.file_extension == ".mp4" or fr.file_extension == ".webm" else default_vcodec
+        vbitrate = "5M" #seems to yield best results w/ h264_v4l2m2m on pi, recommended for 720p.
+
+        # copy the audio stream if no transposition, otherwise use the aac codec
+        is_transposed = semitones != 0
+        acodec = "aac" if is_transposed else "copy"
+        input = ffmpeg.input(fr.file_path)
+        audio = input.audio.filter("rubberband", pitch=pitch) if is_transposed else input.audio
+
+        if (fr.cdg_file_path != None): #handle CDG files
+            # copyts helps with sync issues, fps=25 prevents ffmpeg from needlessly encoding cdg at 300fps
+            cdg_input = ffmpeg.input(fr.cdg_file_path, copyts=None)
+            video = cdg_input.video.filter("fps", fps=25)
+            #cdg is very fussy about these flags. pi needs to encode to aac and cant just copy the mp3 stream
+            logging.info("Path to save: " + save_path)
+            output = ffmpeg.output(audio, video, save_path, 
+                                vcodec=vcodec, acodec="aac", 
+                                pix_fmt="yuv420p", f="mp4", video_bitrate=vbitrate,
+                                movflags="frag_keyframe+default_base_moof")    
+        else: 
+            video = input.video     
+            logging.info("Path to save: " + save_path)
+            output = ffmpeg.output(audio, video, save_path, 
+                                vcodec=vcodec, acodec=acodec, 
+                                f="mp4", video_bitrate=vbitrate,
+                                movflags="frag_keyframe+default_base_moof")
+    
+        self.ffmpeg_process = output.run_async(pipe_stderr=True, pipe_stdin=True)
+
+        return self.is_saving
 
     def is_file_playing(self):
         return self.is_playing
@@ -629,7 +700,7 @@ class Karaoke:
         self.is_paused = True
         self.is_playing = False
         self.now_playing_transpose = 0
-
+        
     def run(self):
         logging.info("Starting PiKaraoke!")
         logging.info(f"Connect the player host to: {self.url}/splash")

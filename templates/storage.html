@@ -48,16 +48,16 @@
 <hr />
 
 <!-- MSG: Display Any User Specific Directories. -->
-<h2>User Specific Directories:</h2>
+<h2>Clickable User Specific Directories/Playlists:</h2>
 <span style="color:rgb(240, 123, 28)">
-  {% if user_dirs == 'None' %}
-      <p>None</p>
-  {% else %}
+  {% if subdirs %}
       <ul>
-      {% for d in user_dirs %}
-          <li>{{ d }}</li>
+      {% for d in subdirs %}
+          <li><a href="{{ url_for('change_to_subdir', new_dir=d) }}">{{ d }}</a></li>
       {% endfor %}
       </ul>
+  {% else %}
+      <p>None</p>
   {% endif %}
 </span>
 
@@ -85,7 +85,6 @@
   {# MSG: Title for change of song directory. #}
   <p>Enter the directory path (e.g., /myfiles/mysongs):</p>
   <form id='change_dir-form' action="{{ url_for('change_dir') }}" method="post">
-
     <div class="field has-addons" style="margin-bottom: 5px ">
       <div class="control" style="width:100%; max-width:350px">
         <input id="song_dir" name="song_dir" class="input" ></input>

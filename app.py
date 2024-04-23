@@ -15,7 +15,7 @@ import cherrypy
 import flask_babel
 import psutil
 from flask import (Flask, flash, make_response, redirect, render_template,
-                   request, send_file, url_for)
+                   request, send_file, url_for, session)
 from flask_babel import Babel
 from flask_paginate import Pagination, get_page_parameter
 from selenium import webdriver
@@ -159,7 +159,7 @@ def nowplaying():
             "now_playing_url": k.now_playing_url,
             "is_paused": k.is_paused,
             "transpose_value": k.now_playing_transpose,
-            "volume": k.volume,
+            "volume": k.volume
         }
         rc["hash"] = hash_dict(rc) # used to detect changes in the now playing data
         return json.dumps(rc)
@@ -255,6 +255,13 @@ def pause():
 @app.route("/transpose/<semitones>", methods=["GET"])
 def transpose(semitones):
     k.transpose_current(int(semitones))
+    return redirect(url_for("home"))
+
+@app.route("/transpose_save/<semitones>", methods=["GET"])
+def transpose_save(semitones):
+    file_path = request.args.get('file_path')
+    username = request.args.get('username')
+    k.transpose_save(int(semitones), file_path, username)
     return redirect(url_for("home"))
 
 @app.route("/restart")
@@ -419,7 +426,6 @@ def edit_file():
     queue_error_msg = "Error: Can't edit this song because it is in the current queue: "
     if "song" in request.args:
         song_path = request.args["song"]
-        # print "SONG_PATH" + song_path
         if song_path in k.queue:
             flash(queue_error_msg + song_path, "is-danger")
             return redirect(url_for("browse"))
@@ -429,6 +435,7 @@ def edit_file():
                 site_title=site_name,
                 title="Song File Edit",
                 song=song_path.encode("utf-8", "ignore"),
+                admin=is_admin()
             )
     else:
         d = request.form.to_dict()
@@ -526,17 +533,23 @@ def info():
         song_dir = song_dir
     )
 
-@app.route("/storage")
+@app.route("/storage", methods=["GET"])
 def storage():
     song_dir = k.download_path
 
     is_pi = get_platform() == "raspberry_pi"
 
+    k_users_path = os.path.join(song_dir, 'k-users')
+    if os.path.isdir(k_users_path):
+        subdirs = [d for d in os.listdir(k_users_path) if os.path.isdir(os.path.join(k_users_path, d))]
+    else:
+        subdirs = []
     return render_template(
-        "storage.html",
+        'storage.html', 
         is_pi=is_pi,
         admin=is_admin(),
-        song_dir = song_dir
+        song_dir=song_dir, 
+        subdirs=subdirs
         )
 
 # Delay system commands to allow redirect to render first
@@ -567,14 +580,10 @@ def change_dir():
         if request.method == "POST":
             new_dir = request.form.get("song_dir")
             print(f"This is the song directory from the change directory route {new_dir}") # for debugging
-            if os.path.isdir(new_dir) and new_dir.endswith('/'):
+            new_dir = os.path.normpath(new_dir)  # Normalize the path
+            if os.path.isdir(new_dir):
                 # Handle form submission here
                 k.download_path = new_dir
-                flash("Song directory changed. Please rescan the song directory for the changes to take effect!", "is-info")
-                return redirect(url_for("storage"))
-            elif os.path.isdir(new_dir) and not new_dir.endswith('/'):
-                k.download_path = new_dir + '/'
-                # Message shown after changing song directory
                 flash("Song directory changed. Please rescan the song directory for the changes to take effect!", "is-info")
                 return redirect(url_for("storage"))
             else:
@@ -586,6 +595,19 @@ def change_dir():
             return redirect(url_for("storage"))
     else:
         flash("You don't have permission to change the directory.", "is-danger")
+
+@app.route("/change_to_subdir/<path:new_dir>", methods=["GET"])
+def change_to_subdir(new_dir):
+    if (is_admin()):   
+        new_dir_path = os.path.normpath(os.path.join(k.download_path, 'k-users', new_dir))
+        if os.path.isdir(new_dir_path):
+            # Store the main directory path in the session
+            session['main_dir'] = k.download_path
+            k.download_path = new_dir_path
+            flash("Song directory changed to " + new_dir_path + ". Please rescan the song directory for the changes to take effect!", "is-info")
+        else:
+            flash("Not a valid directory!", "is-danger")
+        return redirect(url_for("storage"))
 
 @app.route("/update_ytdl")
 def update_ytdl():
