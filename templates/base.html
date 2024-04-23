@@ -214,7 +214,7 @@
         document.getElementById('quitLink').addEventListener('click', function(event) {
             event.preventDefault();
             if(confirm('Are you sure you want to quit?')) {
-                window.location.href = '{{ url_for('quit') }}';
+              window.location.href = "{{ url_for('quit') }}";
             }
         });
         </script>
