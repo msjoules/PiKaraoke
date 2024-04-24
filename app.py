@@ -420,7 +420,6 @@ def delete_file():
         flash("Error: No song parameter specified!", "is-danger")
     return redirect(url_for("browse"))
 
-
 @app.route("/files/edit", methods=["GET", "POST"])
 def edit_file():
     queue_error_msg = "Error: Can't edit this song because it is in the current queue: "
@@ -441,27 +440,25 @@ def edit_file():
         d = request.form.to_dict()
         if "new_file_name" in d and "old_file_name" in d:
             new_name = d["new_file_name"]
-            old_name = d["old_file_name"]
-            if k.is_song_in_queue(old_name):
+            song_path = d["old_file_name"]
+            song_dir = os.path.dirname(song_path)
+            file_extension = os.path.splitext(song_path)[1]
+            new_file_path = os.path.join(song_dir, new_name + file_extension)
+            if k.is_song_in_queue(song_path):
                 # check one more time just in case someone added it during editing
                 flash(queue_error_msg + song_path, "is-danger")
+            elif os.path.isfile(new_file_path):
+                flash(
+                    "Error Renaming file: '%s' to '%s'. Filename already exists."
+                    % (song_path, new_name + file_extension),
+                    "is-danger",
+                )
             else:
-                # check if new_name already exist
-                file_extension = os.path.splitext(old_name)[1]
-                if os.path.isfile(
-                    os.path.join(k.download_path, new_name + file_extension)
-                ):
-                    flash(
-                        "Error Renaming file: '%s' to '%s'. Filename already exists."
-                        % (old_name, new_name + file_extension),
-                        "is-danger",
-                    )
-                else:
-                    k.rename(old_name, new_name)
-                    flash(
-                        "Renamed file: '%s' to '%s'." % (old_name, new_name),
-                        "is-warning",
-                    )
+                k.rename(song_path, new_file_path)
+                flash(
+                    "Renamed file: '%s' to '%s'." % (song_path, new_file_path),
+                    "is-warning",
+                )
         else:
             flash("Error: No filename parameters were specified!", "is-danger")
         return redirect(url_for("browse"))
