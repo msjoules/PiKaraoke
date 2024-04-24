@@ -273,7 +273,8 @@ class Karaoke:
 
     def download_video(self, video_url, enqueue=False, user="Pikaraoke"):
         logging.info("Downloading video: " + video_url)
-        dl_path = self.download_path + "%(title)s---%(id)s.%(ext)s"
+        dl_path = self.download_path + "/" + "%(title)s---%(id)s.%(ext)s"
+        dl_path = os.path.normpath(dl_path)
         file_quality = (
             "bestvideo[ext!=webm][height<=1080]+bestaudio[ext!=webm]/best[ext!=webm]"
             if self.high_quality
@@ -325,16 +326,21 @@ class Karaoke:
         
         self.get_available_songs()
 
-    def rename(self, song_path, new_name):
-        logging.info("Renaming song: '" + song_path + "' to: " + new_name)
-        ext = os.path.splitext(song_path)
-        if len(ext) == 2:
-            new_file_name = new_name + ext[1]
-        os.rename(song_path, self.download_path + new_file_name)
+    def rename(self, old_file_path, new_file_path):
+        logging.info("Renaming song: '" + old_file_path + "' to: " + new_file_path)
+        # Save the current working directory
+        original_dir = os.getcwd()
+        os.rename(old_file_path, new_file_path)
         # if we have an associated cdg file, rename that too
-        cdg_file = song_path.replace(ext[1],".cdg")
-        if (os.path.exists(cdg_file)):
-            os.rename(cdg_file, self.download_path + new_name + ".cdg")
+        old_base_name = os.path.splitext(old_file_path)[0]
+        new_base_name = os.path.splitext(new_file_path)[0]
+        old_cdg_file = old_base_name + ".cdg"
+        new_cdg_file = new_base_name + ".cdg"
+        if os.path.exists(old_cdg_file):
+            logging.info('cdg file exists & will be changed')
+            os.rename(old_cdg_file, new_cdg_file)
+        # Change the working directory back to the original directory
+        os.chdir(original_dir)
         self.get_available_songs()
 
     def filename_from_path(self, file_path):
