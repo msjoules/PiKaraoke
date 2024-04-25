@@ -196,6 +196,15 @@ def add_random():
         flash("Ran out of songs!", "is-warning")
     return redirect(url_for("queue"))
 
+@app.route("/queue/addplaylist")
+def add_playlist():
+    rc = k.queue_playlist()
+    if rc:
+        flash("Added playlist", "is-success")
+    else:
+        flash("Ran out of songs!", "is-warning")
+    return redirect(url_for("queue"))
+
 @app.route("/queue/edit", methods=["GET"])
 def queue_edit():
     action = request.args["action"]

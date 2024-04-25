@@ -503,7 +503,6 @@ class Karaoke:
         usr_subdir = self.make_usersubdir(username)
         kiss_usr_filename = self.kiss_filename(file_path)
         str_semitones = f'+{semitones}' if semitones > 0 else f'{semitones}'
-        # save_path = f"{usr_subdir}/{kiss_usr_filename} {semitones} semitones - {username}.mp4"
         save_path = f"{usr_subdir}/{kiss_usr_filename} {str_semitones} semitones - {username}.mp4"
         logging.info(f"usr_subdir = {usr_subdir}; kiss_usr_filename = {kiss_usr_filename}; save_path = {save_path}")
 
@@ -586,6 +585,27 @@ class Karaoke:
                 logging.warn("Song already in queue, trying another... " + songs[r])
             else:
                 self.enqueue(songs[r], "Randomizer")
+                i += 1
+            songs.pop(r)
+            if len(songs) == 0:
+                logging.warn("Ran out of songs!")
+                return False
+        return True
+    
+    def queue_playlist(self):
+        logging.info("Adding playlist to queue")
+        songs = list(self.available_songs)  # make a copy
+        amount = len(songs)
+        if len(songs) == 0:
+            logging.warn("No available songs!")
+            return False
+        i = 0
+        while i < amount:
+            r = random.randint(0, len(songs) - 1)
+            if self.is_song_in_queue(songs[r]):
+                logging.warn("Song already in queue, trying another... " + songs[r])
+            else:
+                self.enqueue(songs[r], "Playlist Randomized")
                 i += 1
             songs.pop(r)
             if len(songs) == 0:
