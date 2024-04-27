@@ -16,9 +16,13 @@ My modifications focus mainly on the interface and my personal preferences:
 - Forced user names instead of assigning anonymous names
 - Default admin password:&ensp;  __mypi__
 - Allow changing of song directory from GUI
+- Clickable subdirectories for easy change into subdirectories
+- Create random playlists and/or user subdirectories, allowing quick queueing up of songs for a particular occasion or user
+- Save transposed songs into user subdirectories
 - Power off directly from navigation bar means less clicks
 - Cursor appears directly in user entry fields, allowing immediate input
 - Use of different icons
+- Logo changed -- original kept in case you prefer that one
 
 Everything runs pretty seamlessly on a NUC7i5 running Debian Bookworm.
 
