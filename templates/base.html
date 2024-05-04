@@ -97,7 +97,12 @@
       }
 
       // handle auto-close flash notifications
-      setTimeout(function() { $("#notification").fadeOut()}, 3000);
+      setTimeout(function() { 
+          $("#notification").fadeIn();  // Show the notification
+          setTimeout(function() { 
+              $("#notification").fadeOut();  // Hide the notification after 3 seconds
+          }, 3000);
+      }, 100);
 
       // handle current user display
       var currentUser = Cookies.get("user");
