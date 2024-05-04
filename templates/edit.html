@@ -10,12 +10,33 @@
     });
 
     $('#transpose-saveto-user').click(function (e) {
-      var value = prompt("Please enter a semitone value:  ");
+      var value = prompt("Please enter a semitone value (default = 0):  ");
       var username = prompt("Please enter the user's name:  ");
+
+      if (!value) {
+          value = 0; 
+      }
+      if (!username) {
+          alert("Username is required."); 
+          return; 
+      }
+
       var file_path = $('input[name="old_file_name"]').val();
-      $.get("/transpose_save/" + value + "?file_path=" + encodeURIComponent(file_path) + 
-      "&username=" + encodeURIComponent(username));
-    });
+
+      // Send AJAX request to the generate_save_path route
+      $.get("/generate_save_path?semitones=" + value + "&file_path=" + encodeURIComponent(file_path) + 
+      "&username=" + encodeURIComponent(username), function(data) {
+          // Confirmation dialog with save_path
+          var proceed = confirm("DOUBLE CHECK THE PATH BEFORE PROCEEDING! \n\nYou're about to save the file: " + data.save_path + ". \n\nDo you want to proceed?");
+          if (proceed) {
+              // If the user confirms, send another request to the check_and_save route
+              $.get("/check_and_save?semitones=" + value + "&file_path=" + encodeURIComponent(file_path) + 
+              "&username=" + encodeURIComponent(username), function(data) {                  
+                  window.location.href='/browse'
+              });
+          }
+      });
+  });
 
     $('#suggest-title').click(function (e) {
       if ($.trim($('#new_file_name').val()) != "") {
@@ -44,7 +65,6 @@
     });
 
   });
-
 
   function clean_title(search_str, title_case = false) {
     var new_name = $('#new_file_name').val();
