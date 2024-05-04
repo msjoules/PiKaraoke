@@ -130,19 +130,30 @@
 </table>
 
 {% if admin %}
-<a class="add-random has-text-success" href="/queue/addrandom?amount=3"
-  {# MSG: Button text which picks three songs at random from the already downloaded songs and adds them to the queue. #}
-  ><i class="icon icon-plus-circled"></i>{% trans %}Add 3 random songs{% endtrans %}</a
->
+<p>Enter the number of songs or 'all':</p>
+<form action="/queue/addsongs" method="get">
+  <div class="field has-addons" style="margin-bottom: 3px ">
+    <div class="control">
+      <input type="text" id="amount" name="amount" class="input" size="5"></input>
+    </div>
+    <div class="control">
+      <button type="submit" class="button is-rounded">Add Songs</button>
+    </div>
+  </div>
+</form>
+
+<hr />
+
+<p style="margin-bottom: 0;">Current directory: 
+  <span style="color:rgb(240, 123, 28)">{{ song_dir }}</span></p>
+<p style="margin-top: 0;">Number of songs in the current directory: 
+  <span style="color:rgb(240, 123, 28)">{{ song_count }}</span></p>
+
 <a
   class="confirm-clear has-text-danger is-pulled-right"
   href="/queue/edit?action=clear"
   {# MSG: Text for the button which clears the entire queue. #}
   ><i class="icon icon-trash-empty"></i>{% trans %}Clear all{% endtrans %}</a
-><br />
-<a class="add-playlist has-text-success" href="/queue/addplaylist"
-  {# MSG: Button text that will queue up the entire playlist. #}
-  ><i class="icon icon-plus-circled"></i>{% trans %}Add entire song list randomly to queue{% endtrans %}</a
 ><br />
 
 {% endif %}
