@@ -353,11 +353,15 @@ class Karaoke:
         rc = os.path.basename(file_path)
         # Split the filename at the first "-"
         parts = rc.split("-", 1)
-        # Use a regular expression to remove everything after the first non-alphanumeric character in the second part
-        parts[1] = re.split("[^a-zA-Z0-9 ]", parts[1].strip())[0].strip()
+
+        if len(parts) > 1:
+            parts[1] = re.split("[^a-zA-Z0-9 ]", parts[1].strip())[0].strip()
+        else:
+            parts = rc.split("｜", 1)
+            if len(parts) > 1:
+                parts[1] = re.split("[^a-zA-Z0-9 ]", parts[1].strip())[0].strip()
         # Join the parts back together with a "-"
         new_filename = "- ".join(parts)
-        # Return the new filename
         return new_filename
 
     def find_song_by_youtube_id(self, youtube_id):
@@ -374,13 +378,6 @@ class Karaoke:
         else:
             logging.error("Error parsing youtube id from url: " + url)
             return None
-      
-    def make_usersubdir(self, username):
-        save_basepath = f"{self.download_path}/k-users"
-        os.makedirs(os.path.join(save_basepath, username), exist_ok=True)
-        usr_subdir = f"{save_basepath}/{username}"
-        usr_subdir = os.path.normpath(usr_subdir)
-        return usr_subdir
     
     def play_file(self, file_path, semitones=0):
         logging.info(f"Playing file: {file_path} transposed {semitones} semitones")
@@ -499,8 +496,7 @@ class Karaoke:
         self.enqueue(self.now_playing_filename, self.now_playing_user, semitones, add_to_front=True)
         self.skip()
 
-    def transpose_save(self, semitones, file_path, username):
-        usr_subdir = self.make_usersubdir(username)
+    def transpose_save(self, semitones, file_path, username, usr_subdir):
         kiss_usr_filename = self.kiss_filename(file_path)
         str_semitones = f'+{semitones}' if semitones > 0 else f'{semitones}'
         save_path = f"{usr_subdir}/{kiss_usr_filename} {str_semitones} semitones - {username}.mp4"
@@ -585,27 +581,6 @@ class Karaoke:
                 logging.warn("Song already in queue, trying another... " + songs[r])
             else:
                 self.enqueue(songs[r], "Randomizer")
-                i += 1
-            songs.pop(r)
-            if len(songs) == 0:
-                logging.warn("Ran out of songs!")
-                return False
-        return True
-    
-    def queue_playlist(self):
-        logging.info("Adding playlist to queue")
-        songs = list(self.available_songs)  # make a copy
-        amount = len(songs)
-        if len(songs) == 0:
-            logging.warn("No available songs!")
-            return False
-        i = 0
-        while i < amount:
-            r = random.randint(0, len(songs) - 1)
-            if self.is_song_in_queue(songs[r]):
-                logging.warn("Song already in queue, trying another... " + songs[r])
-            else:
-                self.enqueue(songs[r], "Playlist Randomized")
                 i += 1
             songs.pop(r)
             if len(songs) == 0:

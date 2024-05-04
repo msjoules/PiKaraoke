@@ -15,7 +15,7 @@ import cherrypy
 import flask_babel
 import psutil
 from flask import (Flask, flash, make_response, redirect, render_template,
-                   request, send_file, url_for, session)
+                   request, send_file, url_for, session, jsonify)
 from flask_babel import Babel
 from flask_paginate import Pagination, get_page_parameter
 from selenium import webdriver
@@ -175,8 +175,16 @@ def clear_command():
 
 @app.route("/queue")
 def queue():
+    song_count = len(k.available_songs)
+    song_dir = k.download_path
     return render_template(
-        "queue.html", queue=k.queue, site_title=site_name, title="Queue", admin=is_admin()
+        "queue.html", 
+        queue=k.queue, 
+        site_title=site_name, 
+        title="Queue", 
+        admin=is_admin(),
+        song_count=song_count, 
+        song_dir=song_dir
     )
 
 @app.route("/get_queue")
@@ -186,23 +194,25 @@ def get_queue():
     else:
         return json.dumps([])
 
-@app.route("/queue/addrandom", methods=["GET"])
-def add_random():
-    amount = int(request.args["amount"])
-    rc = k.queue_add_random(amount)
-    if rc:
-        flash("Added %s random tracks" % amount, "is-success")
+@app.route("/queue/addsongs", methods=["GET"])
+def add_songs():
+    amount = request.args.get("amount")
+    if amount is None:
+        return redirect(url_for("home"))
+    elif amount.lower() == "all":
+        amount = len(k.available_songs)
     else:
-        flash("Ran out of songs!", "is-warning")
-    return redirect(url_for("queue"))
-
-@app.route("/queue/addplaylist")
-def add_playlist():
-    rc = k.queue_playlist()
-    if rc:
-        flash("Added playlist", "is-success")
-    else:
-        flash("Ran out of songs!", "is-warning")
+        try:
+            amount = int(amount)
+        except ValueError:
+            flash("Invalid input! Please enter a number or 'all'.", "is-warning")
+            return redirect(request.referrer)
+    if amount > len(k.available_songs):
+        flash(f"Too many songs! There are only {len(k.available_songs)} songs available.", "is-warning")
+        return redirect(request.referrer)
+    song_count = k.queue_add_random(amount)  
+    if song_count > 0:
+        flash(f"Added {amount} song(s) to the queue.", "is-success")
     return redirect(url_for("queue"))
 
 @app.route("/queue/edit", methods=["GET"])
@@ -266,12 +276,53 @@ def transpose(semitones):
     k.transpose_current(int(semitones))
     return redirect(url_for("home"))
 
-@app.route("/transpose_save/<semitones>", methods=["GET"])
-def transpose_save(semitones):
-    file_path = request.args.get('file_path')
-    username = request.args.get('username')
-    k.transpose_save(int(semitones), file_path, username)
-    return redirect(url_for("home"))
+def make_usersubdir(semitones, file_path, username):
+    # Remove any path separators in the username to prevent nestling
+    username = username.replace('/', '').replace('\\', '')
+    
+    # Prepare user subdirectory path string
+    save_basepath = f"{k.download_path}/k-users"
+    usr_subdir = f"{save_basepath}/{username}"
+    usr_subdir = os.path.normpath(usr_subdir)
+
+    # Generate save_path string
+    kiss_usr_filename = k.kiss_filename(file_path)
+    str_semitones = f'+{semitones}' if semitones > 0 else f'{semitones}'
+    save_path = f"{usr_subdir}/{kiss_usr_filename} {str_semitones} semitones - {username}.mp4"
+
+    return save_path, usr_subdir
+
+@app.route("/generate_save_path", methods=["GET"])  # User path check 
+def generate_save_path():
+    semitones = request.args.get('semitones', default = 0, type = int)
+    file_path = request.args.get('file_path', default = "", type = str)
+    username = request.args.get('username', default = "", type = str)
+
+    save_path, _ = make_usersubdir(semitones, file_path, username)
+
+    return jsonify({'save_path': save_path})  # Return the save_path to the user
+
+@app.route("/check_and_save", methods=["GET"])  # Create path and tranpose_save
+def check_and_save():
+    semitones = request.args.get('semitones', default = 0, type = int)
+    file_path = request.args.get('file_path', default = "", type = str)
+    username = request.args.get('username', default = "", type = str)
+
+    _, usr_subdir = make_usersubdir(semitones, file_path, username)
+
+    # Check if user subdirectory exists
+    if not os.path.exists(usr_subdir):
+        # Create user subdirectory if it doesn't exist
+        os.makedirs(usr_subdir, exist_ok=True)
+
+    result = k.transpose_save(semitones, file_path, username, usr_subdir)
+
+    if result:
+        print('### Transpose Save: ERROR ###')  # for debugging
+        return redirect(url_for('edit_file'))  
+    else:
+        print('### Transpose Save: SUCCESS ###')  # for debugging
+        return redirect(url_for('browse'))  
 
 @app.route("/restart")
 def restart():
@@ -464,10 +515,7 @@ def edit_file():
                 )
             else:
                 k.rename(song_path, new_file_path)
-                flash(
-                    "Renamed file: '%s' to '%s'." % (song_path, new_file_path),
-                    "is-warning",
-                )
+                flash("Renamed file", "is-warning")
         else:
             flash("Error: No filename parameters were specified!", "is-danger")
         return redirect(url_for("browse"))
@@ -590,7 +638,7 @@ def change_dir():
             if os.path.isdir(new_dir):
                 # Handle form submission here
                 k.download_path = new_dir
-                flash("Song directory changed. Please rescan the song directory for the changes to take effect!", "is-info")
+                flash("Please RESCAN the song directory for the changes to take effect!", "is-info")
                 return redirect(url_for("storage"))
             else:
                 print("ERROR no valid directory from route") # for debugging
@@ -610,7 +658,7 @@ def change_to_subdir(new_dir):
             # Store the main directory path in the session
             session['main_dir'] = k.download_path
             k.download_path = new_dir_path
-            flash("Song directory changed to " + new_dir_path + ". Please rescan the song directory for the changes to take effect!", "is-info")
+            flash("Please RESCAN the song directory for the changes to take effect!", "is-info")
         else:
             flash("Not a valid directory!", "is-danger")
         return redirect(url_for("storage"))
