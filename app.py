@@ -590,6 +590,7 @@ def info():
 @app.route("/storage", methods=["GET"])
 def storage():
     song_dir = k.download_path
+    main_dir = session.get('main_dir', song_dir)  
 
     is_pi = get_platform() == "raspberry_pi"
 
@@ -603,7 +604,8 @@ def storage():
         is_pi=is_pi,
         admin=is_admin(),
         song_dir=song_dir, 
-        subdirs=subdirs
+        subdirs=subdirs,
+        main_dir=main_dir
         )
 
 # Delay system commands to allow redirect to render first
@@ -662,6 +664,15 @@ def change_to_subdir(new_dir):
         else:
             flash("Not a valid directory!", "is-danger")
         return redirect(url_for("storage"))
+    
+@app.route("/change_to_base_dir", methods=["GET"])
+def change_to_base_dir():
+    if 'main_dir' in session:
+        k.download_path = session['main_dir']
+        flash("Please RESCAN the song directory for the changes to take effect!", "is-info")
+    else:
+        flash("No base directory found!", "is-danger")
+    return redirect(url_for("storage"))
 
 @app.route("/update_ytdl")
 def update_ytdl():

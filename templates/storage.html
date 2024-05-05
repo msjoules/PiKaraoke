@@ -38,17 +38,15 @@
 {% block content %}
 <hr />
 
-<h2>
+<h3>
   {% trans %}
-  Current Path to Song Directory:&ensp;
+  Current Song Directory:</h3>
   <p style="color:rgb(240, 123, 28)">{{ song_dir }}</p>
   {% endtrans %}
-</h2>
-
 <hr />
 
 <!-- MSG: Display Any User Specific Directories. -->
-<h2>User Specific Directories/Playlists:</h2>
+<h3>User Specific Directories/Playlists:</h3>
 <span style="color:rgb(240, 123, 28)">
   {% if subdirs %}
       <ul>
@@ -63,8 +61,19 @@
 
 <hr />
 
+<!-- MSG: Display Base Directory. -->
+<h3>Base Directory:</h3>
+<span style="color:rgb(240, 123, 28)">
+  {% if main_dir %}
+      <a href="{{ url_for('change_to_base_dir') }}">{{ main_dir }}</a>
+  {% else %}
+      <p>None</p>
+  {% endif %}
+</span>
+<hr />
+
 {% if admin %}
-<h2>{% trans %}Update{% endtrans %}</h2>
+<h3>{% trans %}Update{% endtrans %}</h3>
 <p>{% trans %}Change song directory:{% endtrans %}</p> 
 <ul>
     <li>
