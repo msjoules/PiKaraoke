@@ -355,11 +355,11 @@ class Karaoke:
         parts = rc.split("-", 1)
 
         if len(parts) > 1:
-            parts[1] = re.split("[^a-zA-Z0-9 ]", parts[1].strip())[0].strip()
+            parts[1] = re.split("[^a-zA-Z0-9 ']", parts[1].strip())[0].strip()
         else:
             parts = rc.split("｜", 1)
             if len(parts) > 1:
-                parts[1] = re.split("[^a-zA-Z0-9 ]", parts[1].strip())[0].strip()
+                parts[1] = re.split("[^a-zA-Z0-9 ']", parts[1].strip())[0].strip()
         # Join the parts back together with a "-"
         new_filename = "- ".join(parts)
         return new_filename
