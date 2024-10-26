@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% block scripts %}
+<style>
+    ul {
+        display: contents;
+        padding-left: 0;
+        margin-left: 0;
+    }
+    li {
+        list-style-type: none;
+        align-items: center;
+        color: #74ccb3;
+        word-break: break-word;
+        flex: 1;
+    }
+    li > input {
+        margin-right: 5px;  /* Adds space between checkbox and text */
+    }
+</style>
+<script>
+    $(function () {
+        $('button#submit-songs').click(function(e) {
+            e.preventDefault();
+            let user = Cookies.get("user");
+            if (!user || user.trim() === "") {
+                let name = window.prompt("Please enter your name. This will show up next to the songs you queue up from this device.");
+                if (!name || name.trim() === '') {
+                    alert("Please enter a valid user name if you want to add songs to the queue.");
+                    return;
+                }
+                Cookies.set("user", name, { expires: 1440 });
+                user = Cookies.get("user"); // re-assign user after setting the cookie
+            }
+
+            document.querySelectorAll('input[name="songs"]:checked').forEach(function(checkbox) {
+                const songPath = checkbox.dataset.path;
+                const songSemitone = checkbox.dataset.semitone;
+                $.get(`/enqueue?song=${encodeURIComponent(songPath)}&semitone=${encodeURIComponent(songSemitone)}&user=${encodeURIComponent(user)}`, function (data) {
+                    var obj = JSON.parse(data);
+                    if (obj.success) {
+                        showNotification("Song added to the queue: " + obj.song, "is-success");
+                    } else {
+                        showNotification("Song already in the queue: " + obj.song, "is-danger");
+                    }
+                });
+            });
+        });
+    });
+</script>
+{% endblock %}
+{% block header %}
+{% block title %}Play History{% endblock %}
+{% endblock %}
+{% block content %}
+<h4>Name:&ensp; <span style="color: rgb(240, 123, 28);">{{ user.name }}</span></h4>
+<p>Last update: {{ user.date }}</p>
+<h4>Songs:</h4>
+<ul>
+  {% for song in user.songs %}
+  <li>
+    <input type="checkbox" name="songs" data-path="{{ song.path }}" data-semitone="{{ song.semitone }}">
+    {{ song.title }} &ensp; {{ song.semitone }}
+  </li>
+  {% endfor %}
+</ul>
+<br>
+<button id="submit-songs" class="button is-rounded">Add to Queue</button>
+{% endblock %}

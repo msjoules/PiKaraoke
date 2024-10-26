@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block header %}
+{% block title %}User History Database{% endblock %}
+{% endblock %}
+
+{% block content %}
+<p>Click on the user's name to see their playlist:</p>
+<hr />
+<ul>
+  {% for username in user_list %}
+  <li><a href="{{ url_for('user_history', username=username) }}" style="color: #74ccb3">{{ username }}</a></li>
+  {% endfor %}
+</ul>
+{% endblock %}

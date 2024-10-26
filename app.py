@@ -45,7 +45,8 @@ app.config['BABEL_TRANSLATION_DIRECTORIES'] = 'translations'
 babel = Babel(app)
 site_name = "PiKaraoke"
 # added default password
-admin_password = "mypi"
+# admin_password = "mypi"
+admin_password = None
 is_raspberry_pi = get_platform() == "raspberry_pi"
 
 def filename_from_path(file_path, remove_youtube_id=True):
@@ -608,6 +609,23 @@ def storage():
         main_dir=main_dir
         )
 
+@app.route('/history')
+def history():
+    usernames = [user['name'] for user in k.user_database if user['songs']]
+    return render_template('history_db.html', 
+                           admin=is_admin(),
+                           user_list=usernames)
+
+@app.route('/user-history/<username>', methods=['GET'])
+def user_history(username):
+    user = k.get_user_history(username)
+    if user:
+        return render_template('history.html', 
+                               admin=is_admin(),
+                               user=user)
+    else:
+        return "User not found", 404
+
 # Delay system commands to allow redirect to render first
 def delayed_halt(cmd):
     time.sleep(1.5)
@@ -988,7 +1006,9 @@ if __name__ == "__main__":
 
     # Close running processes when done
     if not args.hide_splash_screen:
-        driver.quit()  
+        driver.quit()
+    
+    k.save_user_history()  
     cherrypy.engine.exit()
 
     sys.exit()

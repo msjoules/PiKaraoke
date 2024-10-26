@@ -12,6 +12,7 @@ from queue import Empty, Queue
 from subprocess import CalledProcessError, check_output
 from threading import Thread
 from urllib.parse import urlparse
+from datetime import datetime
 
 import ffmpeg
 import qrcode
@@ -161,6 +162,9 @@ class Karaoke:
 
         self.generate_qr_code()
 
+        self.user_database = []
+        self.load_user_history()
+
 
     # Other ip-getting methods are unreliable and sometimes return 127.0.0.1
     # https://stackoverflow.com/a/28950776
@@ -246,6 +250,20 @@ class Karaoke:
         img = qr.make_image()
         self.qr_code_path = os.path.join(self.base_path, "qrcode.png")
         img.save(self.qr_code_path)
+
+    def load_user_history(self):
+        file_path = self.download_path + '/user_history.json'
+        if not os.path.exists(file_path):
+            with open(file_path, 'w') as f:
+                json.dump([], f)  # Initialize with an empty list
+        with open(file_path, 'r') as f:
+            self.user_database = json.load(f)
+
+    def get_user_history(self, username):
+        for user in self.user_database:
+            if user['name'] == username:
+                return user
+        return None  # Return None if the user is not found
 
     def get_search_results(self, textToSearch):
         logging.info("Searching YouTube for: " + textToSearch)
@@ -556,10 +574,12 @@ class Karaoke:
 
     def enqueue(self, song_path, user="Pikaraoke", semitones=0, add_to_front=False):
         if (self.is_song_in_queue(song_path)):
-            logging.warn("Song is already in queue, will not add: " + song_path)   
+            logging.warning("Song is already in queue, will not add: " + song_path)   
             return False
         else:
             queue_item = {"user": user, "file": song_path, "title": self.filename_from_path(song_path), "semitones": semitones}
+            if user != 'Randomizer':
+                self.update_user_history(queue_item)
             if add_to_front:
                 logging.info("'%s' is adding song to front of queue: %s" % (user, song_path))
                 self.queue.insert(0, queue_item)
@@ -567,24 +587,70 @@ class Karaoke:
                 logging.info("'%s' is adding song to queue: %s" % (user, song_path))
                 self.queue.append(queue_item)
             return True
+         
+    def save_user_history(self):
+        file_path = self.download_path + '/user_history.json'
+        with open(file_path, 'w') as outfile:
+            json.dump(self.user_database, outfile, indent=4)
+        
+    def update_user_history(self, queue_item):
+            current_date = datetime.now().strftime('%Y-%m-%d')
+            user = queue_item["user"]
+            song_path = queue_item["file"]
+            title = queue_item['title']
+            semitone = queue_item["semitones"]
+
+            user_entry = next((entry for entry in self.user_database if entry['name'] == user), None)
+
+            if user_entry:
+                user_entry['date'] = current_date
+                songs = user_entry['songs']
+                if isinstance(songs, list):
+                    song_entry = next((s for s in songs if s.get('path') == song_path), None)
+                elif isinstance(songs, dict):
+                    songs = [songs]
+                    song_entry = next((s for s in songs if s.get('path') == song_path), None)
+                else:
+                    songs = []
+                    song_entry = None
+                if song_entry:
+                    song_entry['semitone'] = semitone
+                else:
+                    songs.append({
+                        'path': song_path,
+                        'title': title,
+                        'semitone': semitone
+                    })
+                    user_entry['songs'] = songs
+            else:
+                self.user_database.append({
+                    'date': current_date,
+                    'name': user,
+                    'songs': [{
+                        'path': song_path,
+                        'title': title,
+                        'semitone': semitone
+                        }]
+                    }
+                )
 
     def queue_add_random(self, amount):
         logging.info("Adding %d random songs to queue" % amount)
         songs = list(self.available_songs)  # make a copy
         if len(songs) == 0:
-            logging.warn("No available songs!")
+            logging.warning("No available songs!")
             return False
         i = 0
         while i < amount:
             r = random.randint(0, len(songs) - 1)
             if self.is_song_in_queue(songs[r]):
-                logging.warn("Song already in queue, trying another... " + songs[r])
+                logging.warning("Song already in queue, trying another... " + songs[r])
             else:
                 self.enqueue(songs[r], "Randomizer")
                 i += 1
             songs.pop(r)
             if len(songs) == 0:
-                logging.warn("Ran out of songs!")
+                logging.warning("Ran out of songs!")
                 return False
         return True
 
@@ -607,7 +673,7 @@ class Karaoke:
             return False
         if action == "up":
             if index < 1:
-                logging.warn("Song is up next, can't bump up in queue: " + song["file"])
+                logging.warning("Song is up next, can't bump up in queue: " + song["file"])
                 return False
             else:
                 logging.info("Bumping song up in queue: " + song["file"])
@@ -616,7 +682,7 @@ class Karaoke:
                 return True
         elif action == "down":
             if index == len(self.queue) - 1:
-                logging.warn(
+                logging.warning(
                     "Song is already last, can't bump down in queue: " + song["file"]
                 )
                 return False
@@ -720,5 +786,6 @@ class Karaoke:
                         self.play_file(self.queue[0]["file"], self.queue[0]["semitones"])
                 self.handle_run_loop()
             except KeyboardInterrupt:
-                logging.warn("Keyboard interrupt: Exiting pikaraoke...")
+                logging.warning("Keyboard interrupt: Exiting pikaraoke...")
+                self.save_user_history()  
                 self.running = False
