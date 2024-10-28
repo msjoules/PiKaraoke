@@ -625,6 +625,23 @@ def user_history(username):
                                user=user)
     else:
         return "User not found", 404
+    
+@app.route('/delete-history', methods=['POST'])
+def delete_history():
+    data = request.get_json()
+    songs = data['songs']
+    user = data['user']
+    
+    user_entry = next((entry for entry in k.user_database if entry['name'] == user), None)
+    
+    if user_entry:
+        for song in songs:
+            user_entry['songs'] = [s for s in user_entry['songs'] if s['path'] != song['path']]
+        
+        k.save_user_history()
+        return jsonify(success=True)
+    else:
+        return jsonify(success=False, message="User or songs not found"), 404
 
 # Delay system commands to allow redirect to render first
 def delayed_halt(cmd):

@@ -29,7 +29,7 @@
                     return;
                 }
                 Cookies.set("user", name, { expires: 1440 });
-                user = Cookies.get("user"); // re-assign user after setting the cookie
+                user = Cookies.get("user"); 
             }
 
             document.querySelectorAll('input[name="songs"]:checked').forEach(function(checkbox) {
@@ -43,6 +43,32 @@
                         showNotification("Song already in the queue: " + obj.song, "is-danger");
                     }
                 });
+            });
+        });
+
+        $('button#delete-songs').click(function(e) {
+            e.preventDefault();
+            const selectedSongs = [];
+            document.querySelectorAll('input[name="songs"]:checked').forEach(function(checkbox) {
+                selectedSongs.push({
+                    path: checkbox.dataset.path,
+                    semitones: checkbox.dataset.semitone
+                });
+            });
+
+            $.ajax({
+                url: '/delete-history',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({songs: selectedSongs, user: "{{ user.name }}"}),
+                success: function(response) {
+                    if (response.success) {
+                        location.reload(); 
+                        showNotification("Songs deleted successfully", "is-success");
+                    } else {
+                        alert(response.message);
+                    }
+                }
             });
         });
     });
@@ -65,4 +91,5 @@
 </ul>
 <br>
 <button id="submit-songs" class="button is-rounded">Add to Queue</button>
+<button id="delete-songs" class="button is-rounded">Delete from Playlist</button>
 {% endblock %}
