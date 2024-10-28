@@ -3,9 +3,6 @@
 {% block scripts %}
 <script>
   $(function () {
-    // Set focus (cursor) on input field so you don't need your mouse
-    $("#song_dir").focus();
-
     $("#change_dir-form").submit(function (e) {
       if (!window.confirm("Are you sure you want to change the song directory?")) {
         e.preventDefault();
