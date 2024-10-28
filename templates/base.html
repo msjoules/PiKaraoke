@@ -77,6 +77,9 @@
       if (currentPath == "/queue") {
         $("#queue").addClass("is-active")
       }
+      if (currentPath == "/history") {
+        $("#history").addClass("is-active")
+      }
       if (currentPath == "/search") {
         $("#search").addClass("is-active")
       }
@@ -187,29 +190,21 @@
           {# MSG: Navigation link for the home page. #}
           <span>{% trans %}Home{% endtrans %}</span>
         </a>
-
         <a id="queue" class="navbar-item" href="{{ url_for('queue') }}">
           <i class="material-icons">playlist_add_check</i>
           {# MSG: Navigation link for the queue page. #}
           <span>{% trans %}Queue{% endtrans %}</span>
+        </a>
+        <a id="queue" class="navbar-item" href="{{ url_for('history') }}">
+          <i class="material-icons">person_search</i>
+          {# MSG: Navigation link for the history page. #}
+          <span>{% trans %}History{% endtrans %}</span>
         </a>
         <a id="search" class="navbar-item" href="{{ url_for('search') }}">
           <i class="icon icon-search-1" title="Search"></i>
           {# MSG: Navigation link for the search page add songs to the queue. #}
           <span>{% trans %}Search{% endtrans %}</span>
         </a>
-        <a id="browse" class="navbar-item" href="{{ url_for('browse') }}">
-          <i class="material-icons">library_music</i>
-          {# MSG: Navigation link for the page where the user can add existing songs to the queue. #}
-          <span>{% trans %}Browse{% endtrans %}</span>
-        </a>
-        {% if admin %}
-        <a id="storage" class="navbar-item" href="{{ url_for('storage') }}">
-          <i class="material-icons">save_as</i>
-          {# MSG: Navigation link for the page where the user can add existing songs to the queue. #}
-          <span>{% trans %}Storage{% endtrans %}</span>
-        </a>
-        {% endif %}
         {% if admin %}
         <a id="quitLink" class="navbar-item">
             <i class="material-icons">power_settings_new</i>
@@ -238,8 +233,20 @@
           </a>
           <a id="info" class="navbar-item" href="{{ url_for('info') }}">
             <i class="icon icon-info-circled-1" title="Info"></i>
-            <span>Pikaraoke</span>&nbsp;&nbsp;
+            <span>Info</span>&nbsp;&nbsp;
           </a>
+          <a id="browse" class="navbar-item" href="{{ url_for('browse') }}">
+            <i class="material-icons">library_music</i>
+            {# MSG: Navigation link for the page where the user can add existing songs to the queue. #}
+            <span style="position:relative; bottom:7px;">{% trans %}Browse{% endtrans %}</span>
+          </a>
+          {% if admin %}
+          <a id="storage" class="navbar-item" href="{{ url_for('storage') }}">
+            <i class="material-icons">storage</i>
+            {# MSG: Navigation link for the page where the user can add existing songs to the queue. #}
+            <span style="position:relative; bottom:7px;">Storage</span>
+          </a>
+          {% endif %}
         </div>
       </div>
     </nav>
