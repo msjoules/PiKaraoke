@@ -107,10 +107,7 @@
       } else {
         value = 0;
       }
-      r = confirm("Transpose this song: " + getSemitonesLabel(value) + "?");
-      if (r) {
-        $.get("/transpose/" + value);
-      }
+      $.get("/transpose/" + value);
       slider.value = 0;
       output.innerHTML = getSemitonesLabel(slider.value);
     });
@@ -132,20 +129,11 @@
     });
 
     $("#restart").click(function () {
-      r = confirm("Are you sure you want to restart this track?");
-      if (r) {
-        $.get("/restart");
-      }
+      $.get("/restart");
     });
 
     $("#skip").click(function () {
-      r = confirm(
-        // {# MSG: Confirmation message when clicking a button to skip a track. #}
-        `{{ _("Are you sure you want to skip this track? If you didn't add this song, ask permission first!") }}`
-      );
-      if (r) {
-        $.get("/skip");
-      }
+      $.get("/skip");
     });
 
     $("#semitones-info").click(function () {
