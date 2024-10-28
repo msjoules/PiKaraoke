@@ -71,14 +71,8 @@
 
   $(document).on('click', '.confirm-delete', function (e) {
     e.preventDefault();
-      if (
-        window.confirm(
-          `Are you sure you want to delete "${this.title}"" from the queue?`
-        )
-      ) {
-        $.get(this.href)
-        refreshQueue();
-      }
+    $.get(this.href)
+    refreshQueue();
   });
 
   $(document).on('click', '.up-button', function (e) {
@@ -95,13 +89,8 @@
 
   $(document).on('click', '.confirm-clear', function (e) {
     e.preventDefault();
-    let prompt = window.prompt(
-      "Are you sure you want to clear the ENTIRE queue? Type 'ok' to continue"
-    );
-    if (prompt.toLowerCase() === "ok") {
-      $.get(this.href)
-      refreshQueue();
-    }
+    $.get(this.href)
+    refreshQueue();
   });
 
   //on page load
@@ -153,7 +142,7 @@
   class="confirm-clear has-text-danger is-pulled-right"
   href="/queue/edit?action=clear"
   {# MSG: Text for the button which clears the entire queue. #}
-  ><i class="icon icon-trash-empty"></i>{% trans %}Clear all{% endtrans %}</a
+  ><i class="icon icon-trash-empty"></i>{% trans %}Clear entire queue and STOP all play{% endtrans %}</a
 ><br />
 
 {% endif %}
