@@ -246,22 +246,28 @@ def queue_edit():
                 flash("Error deleting from queue: " + song, "is-danger")
     return redirect(url_for("queue"))
 
-@app.route("/enqueue", methods=["POST", "GET"])
+@app.route('/enqueue', methods=['GET', 'POST'])
 def enqueue():
-    if "song" in request.args:
-        song = request.args["song"]
-    else:
-        d = request.form.to_dict()
-        song = d["song-to-add"]
-    if "user" in request.args:
-        user = request.args["user"]
-    else:
-        d = request.form.to_dict()
-        user = d["song-added-by"]
-    rc = k.enqueue(song, user)
-    song_title = filename_from_path(song)
-    return json.dumps({"song": song_title, "success": rc })
+    if request.method == 'POST':
+        data = request.form if request.form else request.json
+        song_path = data.get('song')
+        user = data.get('user')
+        semitones = data.get('semitone', 0)  # Default to 0 if not provided
+    else:  # GET method
+        song_path = request.args.get('song')
+        user = request.args.get('user')
+        semitones = request.args.get('semitone', 0)  # Default to 0 if not provided
 
+    if not song_path or not user:
+        return jsonify(success=False, message="Missing parameters"), 400
+
+    success = k.enqueue(song_path, user, int(semitones))
+
+    if success:
+        return jsonify(success=True, song=song_path)
+    else:
+        return jsonify(success=False, message="Song already in queue")
+    
 @app.route("/skip")
 def skip():
     k.skip()
@@ -319,10 +325,8 @@ def check_and_save():
     result = k.transpose_save(semitones, file_path, username, usr_subdir)
 
     if result:
-        print('### Transpose Save: ERROR ###')  # for debugging
         return redirect(url_for('edit_file'))  
     else:
-        print('### Transpose Save: SUCCESS ###')  # for debugging
         return redirect(url_for('browse'))  
 
 @app.route("/restart")
@@ -670,7 +674,6 @@ def change_dir():
     if (is_admin()):   
         if request.method == "POST":
             new_dir = request.form.get("song_dir")
-            print(f"This is the song directory from the change directory route {new_dir}") # for debugging
             new_dir = os.path.normpath(new_dir)  # Normalize the path
             if os.path.isdir(new_dir):
                 # Handle form submission here
@@ -678,11 +681,9 @@ def change_dir():
                 flash("Please RESCAN the song directory for the changes to take effect!", "is-info")
                 return redirect(url_for("storage"))
             else:
-                print("ERROR no valid directory from route") # for debugging
                 flash("Not a valid directory!", "is-danger")
                 return redirect(url_for("storage"))
         else:
-            print('ERROR: Nothing posting') # for debugging
             return redirect(url_for("storage"))
     else:
         flash("You don't have permission to change the directory.", "is-danger")

@@ -36,12 +36,7 @@
                 const songPath = checkbox.dataset.path;
                 const songSemitone = checkbox.dataset.semitone;
                 $.get(`/enqueue?song=${encodeURIComponent(songPath)}&semitone=${encodeURIComponent(songSemitone)}&user=${encodeURIComponent(user)}`, function (data) {
-                    var obj = JSON.parse(data);
-                    if (obj.success) {
-                        showNotification("Song added to the queue: " + obj.song, "is-success");
-                    } else {
-                        showNotification("Song already in the queue: " + obj.song, "is-danger");
-                    }
+                    showNotification("Song(s) added if they are not already in the queue", "is-warning");
                 });
             });
         });
