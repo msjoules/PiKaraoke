@@ -15,12 +15,12 @@ My modifications are Linux based and focus mainly on the interface and my person
 
 - Forced user names instead of assigning anonymous names
 - Default admin password:&ensp;  __mypi__
+- User histories are stored, allowing easy access to commonly played songs by that user along with their most recent key changes
 - Allow changing of song directory from GUI
 - Create user specific subdirectories
 - Switch easily back and forth between the main directory and subdirectories
-- Create random playlists, allowing quick queueing up of songs for a particular occasion or user
-- User controlled quantity of random songs to queue up instead of limiting to only 3 songs
 - Save (non-)transposed songs into user subdirectories
+- User controlled quantity of random songs to queue up instead of limiting to only 3 songs
 - Power off directly from navigation bar means less clicks
 - Cursor appears directly in user entry fields, allowing immediate input
 - Use of different icons
