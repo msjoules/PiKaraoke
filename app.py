@@ -620,10 +620,22 @@ def history():
                            admin=is_admin(),
                            user_list=usernames)
 
+# @app.route('/user-history/<username>', methods=['GET'])
+# def user_history(username):
+#     user = k.get_user_history(username)
+#     if user:
+#         return render_template('history.html', 
+#                                admin=is_admin(),
+#                                user=user)
+#     else:
+#         return "User not found", 404
+
 @app.route('/user-history/<username>', methods=['GET'])
 def user_history(username):
     user = k.get_user_history(username)
     if user:
+        # Sort songs alphabetically by title
+        user['songs'] = sorted(user['songs'], key=lambda song: song['title'].lower())
         return render_template('history.html', 
                                admin=is_admin(),
                                user=user)
