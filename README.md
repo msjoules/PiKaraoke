@@ -5,13 +5,11 @@ A BIG THANKS to the origninal creator, Vicwomg https://github.com/vicwomg/pikara
 You can buy him a coffee here:  
 <a href="https://www.buymeacoffee.com/vicwomg" target="_blank"><img src="https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png" alt="Buy Me A Coffee" style="height: 35px !important;width: 100px !important;box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;-webkit-box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;" ></a>
 
-This new version (1.2) is FANTASTIC! 
+This is a modification of Vicwomg's pikaraoke version __1.2__. He has since improved his version and, as a matter of fact, there is now even a Python package of his work! So, if you want to make things easier for yourself, you should most likely go to his repository and get the most up to date package.
 
-It no longer relies on Pygame & VLC which has made it a lot easier to work with.  
+However, since this version works for me and I've gotten it to a point where I like it, I will stick with this version and thus break away from Vicwomg's git.
 
-Note:  CherryPy supports Python 3.6-3.11 and yt-dlp supports Python 3.8+. As such, make sure you install using Python versions between 3.8 to 3.11.
-
-My modifications are Linux based and focus mainly on the interface and my personal preferences:
+My modifications are Linux based and focus mainly on the interface and my personal preferences such as:
 
 - Forced user names instead of assigning anonymous names
 - Default admin password:&ensp;  __mypi__
@@ -32,7 +30,7 @@ If for some reason the app hangs and you can't restart it, you can issue the fol
 
 `pgrep pikaraoke.sh | xargs -r -I {} bash -c 'sudo kill -9 {}'`
 
-
+Note:  CherryPy supports Python 3.6-3.11 and yt-dlp supports Python 3.8+. As such, make sure you install using Python versions between 3.8 to 3.11.
 
 ## README courtesy of Vicwomg:
 
