@@ -615,7 +615,7 @@ def storage():
 
 @app.route('/history')
 def history():
-    usernames = [user['name'] for user in k.user_database if user['songs']]
+    usernames = sorted([user['name'] for user in k.user_database if user['songs']], key=str.lower)
     return render_template('history_db.html', 
                            admin=is_admin(),
                            user_list=usernames)
