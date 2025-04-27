@@ -44,9 +44,7 @@ app.jinja_env.add_extension('jinja2.ext.i18n')
 app.config['BABEL_TRANSLATION_DIRECTORIES'] = 'translations'
 babel = Babel(app)
 site_name = "PiKaraoke"
-# added default password
-# admin_password = "mypi"
-admin_password = None
+
 is_raspberry_pi = get_platform() == "raspberry_pi"
 
 def filename_from_path(file_path, remove_youtube_id=True):
@@ -944,15 +942,20 @@ if __name__ == "__main__":
         required=False,
     ),
     parser.add_argument(
+        "-pwd",
         "--admin-password",
-        help="Administrator password, for locking down certain features of the web UI such as queue editing, player controls, song editing, and system shutdown. If unspecified, everyone is an admin.",
-        default=None,
+        help="Administrator password for locking down certain features of the web UI such as queue editing, player controls, song editing, and system shutdown. " \
+        "If you want everyone to have administive rights, pass ''.",
+        default="mypi",
+        nargs='?',
         required=False,
     ),
 
     args = parser.parse_args()
 
-    if (args.admin_password):
+    if (args.admin_password == ""):
+        admin_password = None
+    else:
         admin_password = args.admin_password
 
     app.jinja_env.globals.update(filename_from_path=filename_from_path)
