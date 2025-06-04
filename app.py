@@ -14,6 +14,7 @@ import time
 import cherrypy
 import flask_babel
 import psutil
+import shutil
 from flask import (Flask, flash, make_response, redirect, render_template,
                    request, send_file, url_for, session, jsonify)
 from flask_babel import Babel
@@ -78,6 +79,10 @@ def is_admin():
         if (a == admin_password):
             return True
     return False
+
+def backup_user_history(original_file, backup_file):
+    if os.path.exists(original_file):  # Ensure file exists before copying
+        shutil.copy(original_file, backup_file)
 
 @babel.localeselector
 def get_locale():
@@ -618,16 +623,6 @@ def history():
                            admin=is_admin(),
                            user_list=usernames)
 
-# @app.route('/user-history/<username>', methods=['GET'])
-# def user_history(username):
-#     user = k.get_user_history(username)
-#     if user:
-#         return render_template('history.html', 
-#                                admin=is_admin(),
-#                                user=user)
-#     else:
-#         return "User not found", 404
-
 @app.route('/user-history/<username>', methods=['GET'])
 def user_history(username):
     user = k.get_user_history(username)
@@ -660,7 +655,14 @@ def delete_history():
 # Delay system commands to allow redirect to render first
 def delayed_halt(cmd):
     time.sleep(1.5)
-    k.queue_clear()  
+    k.queue_clear()
+
+    # Define paths and backup user history before shutdown
+    original_file = os.path.join(k.download_path, 'user_history.json')
+    backup_file = os.path.join(k.download_path, 'user_history_bkup.json')
+
+    backup_user_history(original_file, backup_file)
+     
     cherrypy.engine.stop()
     cherrypy.engine.exit()
     k.stop()
