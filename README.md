@@ -74,12 +74,12 @@ Why? Less pesky dependencies for one. Pygame was previously used to render the s
 <div style="display: flex; flex-wrap: wrap; gap: 10px 5px; max-width: 800px;">
 <img src='./static/images/pikaraoke_nowplaying.png'  alt='pikaraoke_nowplaying' style='width:200px; height:300'>
 <img src='./static/images/queue.png'  alt='queue' style='width:200px; height:240'>
-<img src='./static/images/user_history_db.png'  alt='user_history_db' style='width:200px; height:125'>
-<img src='./static/images/user_play_history.png'  alt='user_play_history' style='width:200px; height:170'>
-<img src='./static/images/search.png'  alt='search_box' style='width:200px; height:170'>
 <img src='./static/images/browse.png'  alt='browse' style='width:200px; height:200'>
+<img src='./static/images/user_play_history.png'  alt='user_play_history' style='width:200px; height:170'>
 <img src='./static/images/storage.png'  alt='storage' style='width:200px; height:310'>
 <img src='./static/images/username.png'  alt='username' style='width:200px; height:180'>
+<img src='./static/images/search.png'  alt='search_box' style='width:200px; height:170'>
+<img src='./static/images/user_history_db.png'  alt='user_history_db' style='width:200px; height:125'>
 </div>
 
 ## Supported Devices / OS
