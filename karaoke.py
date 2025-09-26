@@ -162,6 +162,9 @@ class Karaoke:
 
         self.generate_qr_code()
 
+        self.user_history_dir = os.path.join(self.download_path, 'user_history')
+        os.makedirs(self.user_history_dir, exist_ok=True)
+
         self.user_database = []
         self.load_user_history()
 
@@ -252,7 +255,7 @@ class Karaoke:
         img.save(self.qr_code_path)
 
     def load_user_history(self):
-        file_path = self.download_path + '/user_history.json'
+        file_path = self.user_history_dir + '/user_history.json'
         if not os.path.exists(file_path):
             with open(file_path, 'w') as f:
                 json.dump([], f)  # Initialize with an empty list
@@ -298,7 +301,10 @@ class Karaoke:
             if self.high_quality
             else "mp4"
         )
-        cmd = [self.youtubedl_path, "-f", file_quality, "-o", dl_path, video_url]
+        # Workaround for youtube-dl issues as of 9/28/2025
+        current_issues = ["--extractor-args", "youtube:player-client=default,-tv_simply"]
+        
+        cmd = [self.youtubedl_path, "-f", file_quality, "-o", dl_path, *current_issues, video_url]
         logging.debug("Youtube-dl command: " + " ".join(cmd))
         rc = subprocess.call(cmd)
         if rc != 0:
@@ -589,7 +595,7 @@ class Karaoke:
             return True
          
     def save_user_history(self):
-        file_path = self.download_path + '/user_history.json'
+        file_path = self.user_history_dir + '/user_history.json'
         with open(file_path, 'w') as outfile:
             json.dump(self.user_database, outfile, indent=4)
         
