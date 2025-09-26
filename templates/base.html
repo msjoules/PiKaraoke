@@ -40,12 +40,16 @@
     function setUserCookie(reload=false) {
       var user = Cookies.get("user");
       if (!user) {
-        let name = window.prompt(
+        let input_name = window.prompt(
           // {# MSG: Prompt which asks the user their name when they first try to add to the queue. #}
           "{{ _('Please enter your name. This will show up next to the songs you queue up from this device.') }}"
         );
+        // Trim leading & trailing whitespaces
+        let name = input_name.trim();
+
         if (name) {
-          Cookies.set("user", name, { expires: 3650 });
+          // Set cookie for 30 days
+          Cookies.set("user", name, { expires: 30 });  
         }
         reload && location.reload();
       }
@@ -117,7 +121,7 @@
 
       $('#current-user').click(function(e) {
         e.preventDefault();
-        let name = window.prompt(
+        let input_name = window.prompt(
           // Use a javascript format string, so translators only need to see a regular
           // parametric translation instead of asking them to create valid javascript template.
           // {# MSG: Prompt when changing the current profile name. #}
@@ -125,8 +129,12 @@
             Do you want to change the name of the person using this device? This will show up on queued songs. Current: {{ currentUser }}
           {%- endtrans %}`
         );
+        // Trim leading & trailing whitespaces
+          let name = input_name.trim();
+
         if (name) {
-          Cookies.set("user", name, { expires: 3650 })
+          // Set cookie for 30 days
+          Cookies.set("user", name, { expires: 30 })
         }
         location.reload();
       });
@@ -186,17 +194,17 @@
     <nav class="navbar" role="navigation" aria-label="main navigation">
       <div class="navbar-brand" id="brand" style="padding-left: 10px">
         <a id="home" class="navbar-item" href="{{ url_for('home') }}">
-          <i class="material-icons">tune</i>
+          <i class="material-icons" title="Audio Controls">tune</i>
           {# MSG: Navigation link for the home page. #}
           <span>{% trans %}Home{% endtrans %}</span>
         </a>
         <a id="queue" class="navbar-item" href="{{ url_for('queue') }}">
-          <i class="material-icons">playlist_add_check</i>
+          <i class="material-icons" title="Queue">playlist_add_check</i>
           {# MSG: Navigation link for the queue page. #}
           <span>{% trans %}Queue{% endtrans %}</span>
         </a>
         <a id="queue" class="navbar-item" href="{{ url_for('history') }}">
-          <i class="material-icons">person_search</i>
+          <i class="material-icons" title="Playlist History">person_search</i>
           {# MSG: Navigation link for the history page. #}
           <span>{% trans %}History{% endtrans %}</span>
         </a>
@@ -207,7 +215,7 @@
         </a>
         {% if admin %}
         <a id="quitLink" class="navbar-item">
-            <i class="material-icons">power_settings_new</i>
+            <i class="material-icons" title="Shutdown">power_settings_new</i>
             <span>{% trans %}Power Off{% endtrans %}</span>
         </a>
         <script>
@@ -228,7 +236,7 @@
       <div class="navbar-menu" id="menu">
         <div class="navbar-end">
           <a id="current-user" class="navbar-item" href="{{ url_for('username') }}">
-            <i class="icon  icon-mic-1" title="Current user"></i>
+            <i class="icon  icon-mic-1" title="Current User"></i>
             <span></span>
           </a>
           <a id="info" class="navbar-item" href="{{ url_for('info') }}">
@@ -236,13 +244,13 @@
             <span>Info</span>&nbsp;&nbsp;
           </a>
           <a id="browse" class="navbar-item" href="{{ url_for('browse') }}">
-            <i class="material-icons">library_music</i>
+            <i class="material-icons" title="Music Library">library_music</i>
             {# MSG: Navigation link for the page where the user can add existing songs to the queue. #}
             <span style="position:relative; bottom:7px;">{% trans %}Browse{% endtrans %}</span>
           </a>
           {% if admin %}
           <a id="storage" class="navbar-item" href="{{ url_for('storage') }}">
-            <i class="material-icons">storage</i>
+            <i class="material-icons" title="Storage">save_as</i>
             {# MSG: Navigation link for the page where the user can add existing songs to the queue. #}
             <span style="position:relative; bottom:7px;">Storage</span>
           </a>
