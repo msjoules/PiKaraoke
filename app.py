@@ -132,7 +132,7 @@ def username():
             return render_template("username.html")
         else:
             resp = make_response(redirect('/'))
-            resp.set_cookie("user", name, max_age=1*24*60*60)  # Set cookie that expires in 1 day
+            resp.set_cookie("user", name, max_age=30*24*60*60)  # Set cookie that expires in 30 days
             flash('User name set! You can add songs to the queue.', "is-success")
             return resp
         
@@ -530,14 +530,18 @@ def edit_file():
 
 @app.route("/splash")
 def splash():
-    return render_template(
+    resp = make_response(render_template(
         "splash.html",
         blank_page=True,
         url=k.url,
         hide_url=k.hide_url,
         hide_overlay=k.hide_overlay,
         screensaver_timeout=k.screensaver_timeout
-    )
+    ))
+    # Always set default user cookie for SPLASH screen if not present
+    if not request.cookies.get('user'):
+        resp.set_cookie('user', 'PiKaraoke-Host', max_age=30*24*60*60)
+    return resp
 
 @app.route("/info")
 def info():
